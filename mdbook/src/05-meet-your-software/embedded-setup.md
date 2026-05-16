@@ -1,51 +1,53 @@
-# Embedded Setup
+# 組み込みのセットアップ
 
-Let's take a look at our first program to compile. Check the `examples/init.rs` file:
+それでは、最初にコンパイルするプログラムを見てみましょう。`examples/init.rs` ファイルを確認してください。
 
 ``` rust
 {{#include examples/init.rs}}
 ```
 
-Microcontroller programs are different from standard programs in two aspects: `#![no_std]` and
-`#![no_main]`.
+マイクロコントローラ向けプログラムは、標準的なプログラムと 2 つの点で異なります。`#![no_std]` と
+`#![no_main]` です。
 
-The `no_std` attribute says that this program won't use the `std` crate, which assumes an underlying
-OS; the program will instead use the `core` crate, a subset of `std` that can run on bare metal
-systems (that is, systems without OS abstractions like files and sockets).
+`no_std` 属性は、このプログラムが基盤となる OS を前提とする `std` クレートを使わないことを意味します。
+その代わりに、プログラムは `std` のサブセットであり、ベアメタルシステム（つまり、ファイルやソケットのような
+OS の抽象化がないシステム）上で動作できる `core` クレートを使います。
 
-The `no_main` attribute says that this program won't use the standard `main` interface, which is
-tailored for command line applications that receive arguments. Instead of the standard `main` we'll
-use the `entry` attribute from the [`cortex-m-rt`] crate to define a custom entry point. In this
-program we have named the entry point `main`, but any other name could have been used. The entry
-point function must have signature `fn() -> !`; this type indicates that the function can't return.
-This means that the program never terminates by returning from `main`: if the compiler detects that
-this would be possible it will refuse to compile your program.
+`no_main` 属性は、このプログラムが、引数を受け取るコマンドラインアプリケーション向けに作られた標準の
+`main` インターフェースを使わないことを意味します。標準の `main` の代わりに、[`cortex-m-rt`]
+クレートの `entry` 属性を使って、独自のエントリポイントを定義します。このプログラムでは、エントリポイントに
+`main` という名前を付けていますが、他のどんな名前でも使えます。エントリポイント関数は
+`fn() -> !` というシグネチャでなければなりません。この型は、その関数がリターンできないことを示します。
+これは、このプログラムが `main` から戻ることで終了することは決してない、という意味です。コンパイラが
+それが可能だと検出した場合、あなたのプログラムのコンパイルを拒否します。
 
 [`cortex-m-rt`]: https://crates.io/crates/cortex-m-rt
 
-If you are a careful observer, you'll also notice there is a possibly-hidden `.cargo` directory in
-the Cargo project as well. This directory contains a Cargo configuration file `.cargo/config.toml`.
+注意深く見ていると、Cargo プロジェクト内に、隠しディレクトリになっている可能性のある `.cargo`
+ディレクトリがあることにも気づくでしょう。このディレクトリには Cargo の設定ファイル
+`.cargo/config.toml` が含まれています。
 
 ```toml
 {{#include .cargo/config.toml}}
 ```
 
-This file tweaks the linking process to tailor the memory layout of the program to the requirements
-of the target device.  This modified linking process is a requirement of the `cortex-m-rt`
-crate. The `.cargo/config.toml` file also tells Cargo how to build and run code on our MB2.
+このファイルは、ターゲットデバイスの要件に合わせてプログラムのメモリレイアウトを調整するために、リンク処理に
+手を加えています。このように変更されたリンク処理は、`cortex-m-rt`
+クレートの要件です。`.cargo/config.toml` ファイルは、Cargo に対して、MB2 上でコードをビルドして
+実行する方法も伝えます。
 
-There is also an `Embed.toml` file here:
+ここには `Embed.toml` ファイルもあります。
 
 ```toml
 {{#include Embed.toml}}
 ```
 
-This file tells `cargo-embed` that:
+このファイルは、`cargo-embed` に次のことを伝えます。
 
-- We are working with an NRF52833.
-- We want to halt the chip after flashing it, so our program stops before `main`.
-- We want to disable RTT. RTT is a protocol that allows the chip to send text to a debugger.
-  You have already seen RTT in action: it was the protocol that sent "Hello World" in chapter 3.
-- We want to enable GDB. This will be required for the debugging procedure.
+- 使用しているのは NRF52833 であること。
+- フラッシュ後にチップを停止させ、プログラムが `main` に入る前で止まるようにしたいこと。
+- RTT を無効にしたいこと。RTT は、チップがデバッガーにテキストを送信できるようにするプロトコルです。
+  RTT が実際に使われているところはすでに見ています。第 3 章で "Hello World" を送っていたのが、そのプロトコルでした。
+- GDB を有効にしたいこと。これはデバッグ手順で必要になります。
 
-Now that we've seen what's going on, let's start by building this program.
+何が起きているのかを確認したので、まずはこのプログラムをビルドするところから始めましょう。

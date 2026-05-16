@@ -1,21 +1,21 @@
-# Spooky action at a distance
+# 離れた場所での不気味な作用
 
-`OUT` is not the only register that can control the pins of port `P0`. The `OUTSET` register also lets
-you change the value of the pins, as can `OUTCLR`. However, `OUTSET` and `OUTCLR` don't let you
-retrieve the current output status of port `P0`.
+`OUT` は、ポート `P0` のピンを制御できる唯一のレジスタではありません。`OUTSET` レジスタも
+ピンの値を変更できますし、`OUTCLR` も同様です。ただし、`OUTSET` と `OUTCLR` では
+ポート `P0` の現在の出力状態を取得することはできません。
 
-`OUTSET` is documented in the [Product Specification]:
+`OUTSET` は [Product Specification] に次のように記載されています。
 
-> Subsection 6.8.2.2. OUTSET - Page 145
+> 6.8.2.2 項。OUTSET - 145 ページ
 
-Let's look at below program. The key to this program is `fn print_out`. This function prints the
-current value in `OUT` to the `RTT` console (`examples/spooky.rs`):
+次のプログラムを見てみましょう。このプログラムの要となるのは `fn print_out` です。この関数は、
+`OUT` の現在の値を `RTT` コンソールに出力します（`examples/spooky.rs`）。
 
 ``` rust
 {{#include examples/spooky.rs}}
 ```
 
-You'll see this if you run this program:
+このプログラムを実行すると、次のように表示されます。
 
 ``` console
 $ cargo embed
@@ -28,7 +28,7 @@ $ cargo embed
 15:13:24.055: P0.OUT = 0x000000
 ```
 
-Side effects! Although we are reading the same address multiple times without actually modifying it,
-we still see its value change every time `OUTSET` or `OUTCLR` is written to.
+副作用です！実際には変更していない同じアドレスを何度も読み取っているにもかかわらず、
+`OUTSET` または `OUTCLR` に書き込むたびに、その値が変化していることがわかります。
 
 [Product Specification]: https://docs-be.nordicsemi.com/bundle/ps_nrf52833/attach/nRF52833_PS_v1.7.pdf

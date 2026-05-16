@@ -1,26 +1,17 @@
 # LSM303AGR
 
-Both of the motion sensors on the micro:bit, the magnetometer and the accelerometer, are packaged in
-a single component: the LSM303AGR integrated circuit. These two sensors can be accessed via an I2C
-bus. Each sensor behaves like an I2C target and has a *different* address.
+micro:bit 上の 2 つのモーションセンサー、磁力計と加速度計は、LSM303AGR 集積回路という単一のコンポーネントに搭載されています。これら 2 つのセンサーには、I2C バス経由でアクセスできます。各センサーは I2C ターゲットのように振る舞い、*異なる* アドレスを持ちます。
 
-Each sensor has its own memory where it stores the results of sensing its environment. Our
-interaction with these sensors will mainly involve reading their memory.
+各センサーにはそれぞれ独自のメモリがあり、そこで周囲をセンシングした結果を保持します。これらのセンサーとのやり取りは、主にそのメモリの読み取りを行うことになります。
 
-The memory of these sensors is modeled as byte addressable registers. These sensors can be
-configured too; that's done by writing to their registers. So, in a sense, these sensors are very
-similar to the peripherals *inside* the microcontroller. The difference is that their registers are
-not mapped into the microcontrollers' memory. Instead, their registers have to be accessed via the
-I2C bus.
+これらのセンサーのメモリは、バイトアドレス可能なレジスタとしてモデル化されています。これらのセンサーは設定も可能で、それはそれらのレジスタに書き込むことで行います。したがって、ある意味では、これらのセンサーはマイクロコントローラー *内部* のペリフェラルと非常によく似ています。違いは、それらのレジスタがマイクロコントローラーのメモリにマップされていないことです。代わりに、それらのレジスタには I2C バス経由でアクセスする必要があります。
 
-The main source of information about the LSM303AGR is its [Data Sheet]. Read through it to see how
-one can read the sensors' registers. That part is in:
+LSM303AGR に関する主な情報源は、その [Data Sheet] です。そこに目を通して、センサーのレジスタをどのように読み取れるかを確認してください。その部分は次にあります。
 
 [Data Sheet]: https://www.st.com/resource/en/datasheet/lsm303agr.pdf
 
 > Section 6.1.1 I2C Operation - Page 38 - LSM303AGR Data Sheet
 
-The other part of the documentation relevant to this book is the description of the registers. That
-part is in:
+この本に関連するドキュメントのもう 1 つの部分は、レジスタの説明です。その部分は次にあります。
 
 > Section 8 Register description - Page 46 - LSM303AGR Data Sheet

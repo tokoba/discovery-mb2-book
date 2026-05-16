@@ -1,37 +1,37 @@
 # Linux
 
-Here are the installation commands for a few Linux distributions.
+以下は、いくつかの Linux ディストリビューション向けのインストールコマンドです。
 
-## Ubuntu 20.04 or newer / Debian 10 or newer
+## Ubuntu 20.04 以降 / Debian 10 以降
 
-> **NOTE** `gdb-multiarch` is the GDB command you'll use to debug your Arm Cortex-M programs.
+> **NOTE** `gdb-multiarch` は、Arm Cortex-M プログラムをデバッグする際に使用する GDB コマンドです。
 ``` console
 $ sudo apt install gdb-multiarch minicom libunwind-dev
 ```
 
-## Fedora 32 or newer
+## Fedora 32 以降
 
-> **NOTE** `gdb` is the GDB command you'll use to debug your Arm
-> Cortex-M programs.
+> **NOTE** `gdb` は、Arm
+> Cortex-M プログラムをデバッグする際に使用する GDB コマンドです。
 ``` console
 $ sudo dnf install gdb minicom libunwind-devel
 ```
 
 ## Arch Linux
 
-> **NOTE** `gdb` is the GDB command you'll use to debug your Arm
-> Cortex-M programs.
+> **NOTE** `gdb` は、Arm
+> Cortex-M プログラムをデバッグする際に使用する GDB コマンドです。
 ``` console
 $ sudo pacman -S arm-none-eabi-gdb minicom libunwind
 ```
 
-## Other distros
+## その他のディストリビューション
 
-> **NOTE** `arm-none-eabi-gdb` is the GDB command you'll use to debug your Arm Cortex-M programs.
+> **NOTE** `arm-none-eabi-gdb` は、Arm Cortex-M プログラムをデバッグする際に使用する GDB コマンドです。
 
-For distros that don't have packages for [Arm's pre-built
-toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads), download the "Linux
-64-bit" file and put its `bin` directory on your path.  Here's one way to do it:
+[Arm のビルド済み
+ツールチェーン](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) のパッケージがないディストリビューションでは、「Linux
+64-bit」ファイルをダウンロードし、その `bin` ディレクトリをパスに追加してください。やり方の一例を示します。
 
 ``` console
 $ mkdir -p ~/local
@@ -39,49 +39,49 @@ $ cd ~/local
 $ tar xjf /path/to/downloaded/XXX.tar.bz2
 ```
 
-Then, use your editor of choice to append to your `PATH` in the appropriate shell init file
-(e.g. `~/.zshrc` or `~/.bashrc`):
+次に、使用しているシェルの適切な初期化ファイル
+（たとえば `~/.zshrc` や `~/.bashrc`）で、好みのエディターを使って `PATH` に次の内容を追加します。
 
 ```
 PATH=$PATH:$HOME/local/XXX/bin
 ```
 
-## udev rules
+## udev ルール
 
-These rules let you use USB devices like the micro:bit without root privilege, i.e. `sudo`.
+これらのルールにより、micro:bit のような USB デバイスを root 権限、つまり `sudo` なしで使用できます。
 
-Create this file in `/etc/udev/rules.d` with the content shown below.
+以下の内容で、このファイルを `/etc/udev/rules.d` に作成してください。
 
 ``` console
 $ cat /etc/udev/rules.d/69-microbit.rules
 ```
 
 ``` text
-# CMSIS-DAP for microbit
+# micro:bit 用 CMSIS-DAP
 ACTION!="add|change", GOTO="microbit_rules_end"
 SUBSYSTEM=="usb", ATTR{idVendor}=="0d28", ATTR{idProduct}=="0204", TAG+="uaccess"
 LABEL="microbit_rules_end"
 ```
 
-Then reload the udev rules with:
+次のコマンドで udev ルールを再読み込みします。
 
 ``` console
 $ sudo udevadm control --reload
 ```
 
-If you had any board plugged to your computer, unplug them and then plug them in again, or run the
-following command.
+コンピューターにボードが接続されている場合は、いったん取り外してから再度接続するか、次の
+コマンドを実行してください。
 
 ``` console
 $ sudo udevadm trigger
 ```
 
-## Verify permissions
+## 権限の確認
 
-Connect the micro:bit to your computer using a USB cable.
+USB ケーブルを使って micro:bit をコンピューターに接続します。
 
-The micro:bit should now appear as a USB device (file) in `/dev/bus/usb`. Let's find out how it got
-enumerated:
+micro:bit は `/dev/bus/usb` に USB デバイス（ファイル）として現れるはずです。どのように
+列挙されたかを確認してみましょう。
 
 ``` console
 $ lsusb | grep -i "NXP Arm mbed"
@@ -89,15 +89,15 @@ Bus 001 Device 065: ID 0d28:0204 NXP Arm mbed
 $ # ^^^        ^^^
 ```
 
-In my case, the micro:bit got connected to the bus #1 and got enumerated as the device #65. This means the
-file `/dev/bus/usb/001/065` *is* the micro:bit. Let's check the file permissions:
+私の場合、micro:bit はバス #1 に接続され、デバイス #65 として列挙されました。これは
+ファイル `/dev/bus/usb/001/065` *が* micro:bit であることを意味します。ファイルの権限を確認しましょう。
 
 ``` console
 $ ls -l /dev/bus/usb/001/065
 crw-rw-r--+ 1 nobody nobody 189, 64 Sep  5 14:27 /dev/bus/usb/001/065
 ```
 
-The permissions should be `crw-rw-r--+`, note the `+` at the end, then see your access rights by running the following command.
+権限は `crw-rw-r--+` になっているはずです。末尾の `+` に注意してください。そのうえで、次のコマンドを実行してアクセス権を確認します。
 
 ``` console
 $ getfacl /dev/bus/usb/001/065
@@ -112,9 +112,8 @@ mask::rw-
 other::r-
 ```
 
-You should see your username in the list above with the
-`rw-` permissions, if not ... then check your [udev rules]
-and try re-loading them with:
+上の一覧に、自分のユーザー名が `rw-` 権限付きで表示されるはずです。そうでない場合は、
+[udev rules] を確認し、次のコマンドで再読み込みを試してください。
 
 [udev rules]: linux.md#udev-rules
 
@@ -123,6 +122,6 @@ $ sudo udevadm control --reload
 $ sudo udevadm trigger
 ```
 
-Now, go to the [next section].
+それでは、[next section] に進んでください。
 
 [next section]: verify.md

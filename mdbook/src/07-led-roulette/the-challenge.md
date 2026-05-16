@@ -1,18 +1,18 @@
-# The challenge
+# 課題
 
-You are now well armed to face our challenge! Again, your application should look like this:
+これで、課題に挑む準備は万全です！ 繰り返しになりますが、アプリケーションは次のようになるはずです:
 
 <p align="center">
 <video src="../assets/roulette_fast.mp4" width="500" loop="true" autoplay="true"/>
 </p>
 
-If you can't exactly see what's happening here it is in a much slower version:
+ここで何が起きているのかよく分からない場合は、もっと遅いバージョンはこちらです:
 
 <p align="center">
 <video src="../assets/roulette_slow.mp4" width="500" loop="true" autoplay="true"/>
 </p>
 
-If you need a hint, `templates/solution.rs` provides a mostly-filled-out chunk of code to finish. I
-would suggest you try it on your own first, though: it should be doable by now…
+ヒントが必要なら、`templates/solution.rs` に、仕上げるためのほぼ完成したコード片があります。とはいえ、まずは自分で試してみることをおすすめします。もう今なら
+できるはずです……
 
-Got it?
+分かりましたか？

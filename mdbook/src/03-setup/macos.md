@@ -1,20 +1,20 @@
 # macOS
 
-All the tools can be installed using [Homebrew]:
+すべてのツールは [Homebrew] を使ってインストールできます:
 
 [Homebrew]: http://brew.sh/
 
 ``` console
-$ # GDB debugger - The version in brew is built for all architectures including all of the ARM embedded cores
+$ # GDB デバッガー - brew のバージョンは、すべての ARM 組み込みコアを含むすべてのアーキテクチャ向けにビルドされています
 $ brew install gdb
 
 $ # Minicom
 $ brew install minicom
 
-$ # lsusb lists USB ports
+$ # lsusb は USB ポートを一覧表示します
 $ brew install lsusb
 ```
 
-That's all! Go to the [next section].
+これで完了です！[next section] に進んでください。
 
 [next section]: verify.md

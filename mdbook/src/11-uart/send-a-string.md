@@ -1,8 +1,8 @@
-# Send a string
+# 文字列を送信する
 
-The next task will be to send a whole string from the microcontroller to your computer.
+次の課題は、マイクロコントローラーからコンピューターへ文字列全体を送信することです。
 
-I want you to send the string `"The quick brown fox jumps over the lazy dog."` from the microcontroller to
-your computer.
+マイクロコントローラーから
+コンピューターへ文字列 `"The quick brown fox jumps over the lazy dog."` を送信してください。
 
-It's your turn to write the program.
+プログラムを書くのはあなたの番です。

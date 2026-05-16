@@ -1,223 +1,194 @@
-# What's left for you to explore
+# まだ探求すべきこと
 
-We have barely scratched the surface! There's lots of stuff left for you to
-explore.
+私たちはまだほんの表面をなぞったにすぎません！ まだ探求すべきことがたくさん
+あります。
 
-> **NOTE:** If you're reading this, and you'd like to help add examples or
-> exercises to the Discovery book for any of the items below, or any other
-> relevant embedded topics, we'd love to have your help!
+> **注記:** これを読んでいて、以下の項目のいずれか、あるいはその他の関連する
+> 組み込みトピックについて、Discovery book に例や練習問題を追加するのを
+> 手伝いたいと思ってくださるなら、ぜひ力を貸してください！
 >
-> Please [open an issue] if you would like to help, but need assistance or
-> mentoring for how to contribute this to the book, or open a Pull Request
-> adding the information!
+> 手伝いたいけれど、これを本にどう貢献すればよいかについて支援やメンタリングが
+> 必要な場合は、[open an issue] してください。あるいは、その情報を追加する
+> Pull Request を開いてください！
 
 [open an issue]: https://github.com/rust-embedded/discovery-mb2/issues/new
 
-## More of the MB2
+## MB2 のさらなるトピック
 
-We touched most of the hardware on the MB2 in the course of this book. That said, there's still a
-few MB2 topics left to explore.
+本書の中で、私たちは MB2 上のハードウェアの大部分に触れてきました。とはいえ、まだ
+探求すべき MB2 のトピックがいくつか残っています。
 
-## Direct Memory Access (DMA).
+## ダイレクトメモリアクセス (DMA).
 
-Some peripherals have DMA, a kind of *asynchronous* `memcpy` that allows the peripheral to move data
-into or out of memory without the CPU being involved.
+一部のペリフェラルには DMA があり、これは一種の *非同期な* `memcpy` で、CPU が関与しなくても
+ペリフェラルがメモリとの間でデータを移動できるようにします。
 
-If you are working with a micro:bit v2 you have actually already used DMA: the HAL does this for you
-with the UARTE and TWIM peripherals. A DMA peripheral can be used to perform bulk transfers of data:
-either from RAM to RAM, from a peripheral like a UARTE, to RAM, or from RAM to a peripheral. You can
-schedule a DMA transfer — for example "read 256 bytes from UARTE into this buffer" — and leave it
-running in the background. You can check some register later to see if the transfer has completed,
-or you can ask to receive an interrupt when the transfer completes. Thus, you can schedule the DMA
-transfer and do other work while the transfer is ongoing.
+micro:bit v2 を使っているなら、実はすでに DMA を使っています。HAL が UARTE と TWIM
+ペリフェラルでこれを行ってくれるからです。DMA ペリフェラルはデータの一括転送に使えます。
+たとえば RAM から RAM、UARTE のようなペリフェラルから RAM、あるいは RAM から
+ペリフェラルへの転送です。DMA 転送をスケジュールして — たとえば「このバッファに UARTE
+から 256 バイト読み込む」— バックグラウンドで実行したままにできます。あとで何らかの
+レジスタを確認して転送が完了したかを見ることもできますし、転送完了時に割り込みを
+受け取るようにすることもできます。つまり、DMA 転送をスケジュールし、その転送が進行して
+いる間に別の作業を行えます。
 
-The details of low-level DMA can be a bit tricky. We hope to add a chapter covering this topic in
-the near future.
+低レベルの DMA の詳細は少し厄介になることがあります。このトピックを扱う章を近いうちに
+追加したいと考えています。
 
-There are some abstraction for working with PWM in the `embedded-hal` [`pwm` module] and you will
-find implementations of these traits in `nrf52833-hal`.
+`embedded-hal` の [`pwm` module] には PWM を扱うための抽象化がいくつかあり、`nrf52833-hal`
+にはこれらのトレイトの実装があります。
 
 [`pwm` module]: https://docs.rs/embedded-hal/latest/embedded_hal/pwm/index.html
 
-## Digital inputs and outputs
+## デジタル入力と出力
 
-We have used the microcontroller pins as digital outputs, to drive LEDs. When building our snake
-game, we also caught a glimpse of how these pins can be configured as digital inputs. As digital
-inputs, these pins can read the binary state of switches (on/off) or buttons (pressed/not pressed).
+私たちはマイクロコントローラのピンをデジタル出力として使い、LED を駆動してきました。
+スネークゲームを作るときには、これらのピンをデジタル入力として設定する方法も少し
+垣間見ました。デジタル入力としては、これらのピンでスイッチの二値状態（オン/オフ）や
+ボタンの状態（押されている/押されていない）を読み取れます。
 
-Digital inputs and outputs are abstracted within the `embedded-hal` [`digital` module] and
-[`nrf52833-hal`] does have an implementation for them.
+デジタル入力と出力は `embedded-hal` の [`digital` module] で抽象化されており、
+[`nrf52833-hal`] にはその実装があります。
 
-(*spoilers* reading the binary state of switches / buttons is not as straightforward as it sounds
+(*ネタバレ* スイッチ / ボタンの二値状態を読み取るのは、聞こえるほど単純ではありません
 ;-) )
 
 [`digital` module]: https://docs.rs/embedded-hal/latest/embedded_hal/digital/index.html
 
-## Analog-to-Digital Converters (ADC)
+## アナログ-デジタルコンバータ (ADC)
 
-There are a lot of digital sensors out there. You can use a protocol like I2C and SPI to read
-them. But analog sensors also exist! These sensors just output a reading to the CPU of the voltage
-they are sensing at an ADC input pin.
+世の中にはデジタルセンサーがたくさんあります。I2C や SPI のようなプロトコルを使って
+それらを読み取れます。しかし、アナログセンサーも存在します！ これらのセンサーは、
+ADC 入力ピンで検知している電圧の読み取り値をそのまま CPU に出力します。
 
-The ADC peripheral can thus be used to measure an "analog" voltage level — for example, `1.25` Volts
-— as a "digital" number — for example, `24824` — that the processor can use in its calculations.
+したがって ADC ペリフェラルを使えば、"アナログ" な電圧レベル — たとえば `1.25` ボルト —
+を、プロセッサが計算に使える "デジタル" な数値 — たとえば `24824` — として測定できます。
 
-There were generic ADC traits in `embedded-hal`, but they were removed for `embedded-hal` 1.0: see
-[issue #377]. The `nrf52833-hal` crate provides a nice interface to the specific ADC built into the
-nRF52833.
+`embedded-hal` には汎用的な ADC トレイトがありましたが、`embedded-hal` 1.0 では削除されました:
+[issue #377] を参照してください。`nrf52833-hal` クレートは、nRF52833 に内蔵された固有の ADC
+に対する使いやすいインターフェースを提供します。
 
 [issue #377]: https://github.com/rust-embedded/embedded-hal/issues/377
 
-## Digital-to-Analog Converters (DAC)
+## デジタル-アナログコンバータ (DAC)
 
-As you might expect a DAC is exactly the opposite of ADC. You can write some digital number into a
-register to produce a specific voltage on some analog output pin. When this analog output pin is
-connected to some appropriate electronics and the register is written to quickly with the right
-values you can do things like produce sounds or music.
+想像どおり、DAC は ADC とちょうど逆のものです。レジスタにデジタル値を書き込むことで、
+あるアナログ出力ピンに特定の電圧を出せます。このアナログ出力ピンを適切な電子回路に接続し、
+正しい値を高速にレジスタへ書き込めば、音や音楽を生成するといったことができます。
 
-Neither the nRF52833 nor the MB2 board has a dedicated DAC. One typically gets a kind of DAC effect
-by outputting PWM and using a bit of electronics on the output (RC filter) to "smooth" out the PWM
-waveform.
+nRF52833 にも MB2 ボードにも専用の DAC はありません。一般には、PWM を出力し、その出力側に
+少し電子回路（RC フィルタ）を追加して PWM 波形を "平滑化" することで、DAC のような効果を
+得ます。
 
-## Real Time Clock
+## リアルタイムクロック
 
-A Real-Time Clock peripheral keeps track of time under its own power, usually in "human format":
-seconds, minutes, hours, days, months and years.  Some Real-Time Clocks even handle leap years and
-Daylight Saving Time automatically.
+リアルタイムクロックのペリフェラルは、通常は "人間向けの形式"、つまり秒、分、時、日、月、年
+で、独自の電源により時刻を保持します。リアルタイムクロックの中には、うるう年や
+夏時間を自動で扱えるものもあります。
 
-Neither the nRF52833 nor the MB2 board contains a Real-Time Clock. The nRF52833 does contain
-"Real-Time Counter" (RTC), a low-frequency ticking clock that is supported by `nrf52833-hal`.  This
-counter can be dedicated to serve as a synthesized real-time clock. The key requirement, of course,
-is to keep the RTC peripheral powered even when the MB2 is not in use. While the MB2 does not have
-an on-board battery, the RTC should be able to run for a long time (possibly years) with a battery
-plugged into the battery port on the MB2 (for example, the battery pack provided with the micro::bit
-Go kit).
+nRF52833 にも MB2 ボードにもリアルタイムクロックは搭載されていません。nRF52833 には
+"Real-Time Counter" (RTC) があり、これは `nrf52833-hal` でサポートされている低周波で刻む
+クロックです。このカウンタを専用に使って、疑似的なリアルタイムクロックとして機能させる
+ことができます。もちろん、そのための重要な要件は、MB2 を使っていないときでも RTC
+ペリフェラルに給電し続けることです。MB2 にはオンボードバッテリーはありませんが、MB2 の
+バッテリーポートにバッテリーを接続しておけば、RTC は長期間（場合によっては数年）動作
+できるはずです（たとえば、micro::bit Go kit に付属するバッテリーパックなど）。
 
-## Other communication protocols
+## その他の通信プロトコル
 
-- SPI: The "Serial Peripheral Interface" is a high-speed communications interface similar in some
-  ways to I2C. SPI is abstracted within the [`embedded-hal` `spi` module] and implemented by
-  [`nrf52-hal`].
-- I2S: The "Inter-IC Sound" protocol is a variant of I2C customized for audio transmission.
-  I2S is currently not abstracted within `embedded-hal`, but is implemented by [`nrf52-hal`].
-- Ethernet: there does exist a small TCP/IP stack named [`smoltcp`] which is implemented for some
-  chips. The MB2 does not have an Ethernet peripheral
-- USB: there is some experimental work on this, for example with the [`usb-device`] crate. For
-  the MB2, the USB port is managed by the interface MCU rather than the host MCU, making
-  it difficult to do custom USB things.
-- Bluetooth: the `nrf-softdevice` wrapper provided by the [Embassy] MB2 runtime is probably the
-  easiest entry into MB2 Bluetooth. Embassy also sports the Rust-native [`TrouBLE`] BLE host crate.
-- CAN, SMBUS, IrDA, etc: All kinds of specialty interfaces exist in the world; Rust sometimes has
-  support for them. Please investigate the current situation for the interface you need
+- SPI: 「Serial Peripheral Interface」は、いくつかの点で I2C に似た高速通信
+  インターフェースです。SPI は [`embedded-hal` `spi` module] で抽象化されており、
+  [`nrf52-hal`] によって実装されています。
+- I2S: 「Inter-IC Sound」プロトコルは、音声伝送向けにカスタマイズされた I2C の一種です。
+  I2S は現在 `embedded-hal` では抽象化されていませんが、[`nrf52-hal`] によって
+  実装されています。
+- Ethernet: [`smoltcp`] という小さな TCP/IP スタックが存在し、一部のチップ向けに
+  実装されています。MB2 には Ethernet ペリフェラルはありません
+- USB: これについてはいくつか実験的な取り組みがあり、たとえば [`usb-device`] クレートが
+  あります。MB2 では、USB ポートはホスト MCU ではなくインターフェース MCU によって
+  管理されているため、独自の USB 機能を扱うのは難しくなります。
+- Bluetooth: [Embassy] の MB2 ランタイムが提供する `nrf-softdevice` ラッパーは、おそらく
+  MB2 の Bluetooth への最も簡単な入り口です。Embassy には Rust ネイティブの
+  [`TrouBLE`] BLE ホストクレートもあります。
+- CAN、SMBUS、IrDA など: 世界にはあらゆる種類の特殊用途インターフェースが存在し、Rust が
+  それらをサポートしていることもあります。必要なインターフェースの現状は、ぜひ調べてみて
+  ください
 
 [`embedded-hal` `spi` module]: https://docs.rs/embedded-hal/0.2.6/embedded_hal/spi/index.html
 [`smoltcp`]: https://github.com/smoltcp-rs/smoltcp
 [`usb-device`]: https://github.com/mvirkkunen/usb-device
 [`TrouBLE`]: https://crates.io/crates/trouble-host
 
-Different applications use different communication protocols. User facing applications usually have
-a USB connector because USB is a ubiquitous protocol in PCs and smartphones. Whereas inside cars
-you'll find plenty of CAN buses. Some digital sensors use SPI, I2C or SMBUS.
+アプリケーションによって使う通信プロトコルは異なります。ユーザー向けアプリケーションには通常
+USB コネクタがあります。これは、USB が PC やスマートフォンで広く使われているプロトコル
+だからです。一方、自動車の内部には多くの CAN バスがあります。デジタルセンサーの中には、
+SPI、I2C、SMBUS を使うものもあります。
 
-If you happen to be interested in developing abstractions in the `embedded-hal` or implementations
-of peripherals in general, don't be shy to open an issue in the HAL repositories. Alternatively you
-could also join the [Rust Embedded matrix channel] and get into contact with most of the people who
-built the stuff from above.
+`embedded-hal` における抽象化や、一般にペリフェラルの実装を開発することに興味があるなら、
+気後れせずに HAL リポジトリで issue を開いてください。あるいは
+[Rust Embedded matrix channel] に参加して、上で挙げたものを作った人たちの多くと
+連絡を取ることもできます。
 
-## General Embedded-Relevant Topics
+## 一般的な組み込み関連トピック
 
-These topics cover items that are not specific to our device, or the hardware on it. Instead, they
-discuss useful techniques that could be used on embedded systems.
+これらのトピックでは、私たちのデバイスやその上のハードウェアに固有ではない項目を扱います。
+その代わりに、組み込みシステムで使える有用な技法について説明します。
+ここで取り上げるハードウェアの多くは MB2 では利用できませんが、その多くは安価なハードウェアを MB2 のエッジカードコネクタに接続することで簡単に追加でき、それを直接駆動することも、SPI や I2C のようなものを使って制御することもできます。
 
-Most of the hardware we will discuss here is not available on the MB2 — but much of it could easily
-be added by connecting a cheap piece of hardware to the MB2 edge-card connector, either driving it
-directly or using something like SPI or I2C to control it.
+### マルチタスキング
 
-### Multitasking
+これまでのプログラムのほとんどは、単一のタスクを実行していました。では、OS がなく、したがってスレッドもないシステムで、どうすればマルチタスキングを実現できるでしょうか。マルチタスキングには主に 2 つの方式があります。プリエンプティブ・マルチタスキングと協調的マルチタスキングです。
 
-Most of our programs executed a single task. How could we achieve multitasking in a system with no
-OS, and thus no threads? There are two main approaches to multitasking: preemptive multitasking and
-cooperative multitasking.
+プリエンプティブ・マルチタスキングでは、現在実行中のタスクは、どの時点でも別のタスクによって *プリエンプト*（中断）される可能性があります。プリエンプトが発生すると、最初のタスクは一時停止され、代わりにプロセッサが 2 つ目のタスクを実行します。やがて最初のタスクは再開されます。マイクロコントローラは、*割り込み* という形でプリエンプションをハードウェア的にサポートしています。割り込みについては、[第16章](16-snake-game/index.md) でスネークゲームを作ったときに学びました。
 
-In preemptive multitasking a task that's currently being executed can, at any point in time, be
-*preempted* (interrupted) by another task. On preemption, the first task will be suspended and the
-processor will instead execute the second task. At some point the first task will be resumed.
-Microcontrollers provide hardware support for preemption in the form of *interrupts*. We were
-introduced to interrupts when we built our snake game in [chapter 16](16-snake-game/index.md).
+協調的マルチタスキングでは、実行中のタスクは *サスペンドポイント* に到達するまで実行されます。プロセッサがそのサスペンドポイントに到達すると、現在のタスクの実行を停止し、代わりに別のタスクを実行します。やがて最初のタスクは再開されます。この 2 つのマルチタスク方式の主な違いは、協調的マルチタスキングでは、実行のどの時点でも強制的にプリエンプトされるのではなく、*既知の* サスペンドポイントで実行制御を *譲る* ことです。
 
-In cooperative multitasking a task that's being executed will run until it reaches a *suspension
-point*. When the processor reaches that suspension point it will stop executing the current task and
-instead go and execute a different task. At some point the first task will be resumed. The main
-difference between these two approaches to multitasking is that in cooperative multitasking *yields*
-execution control at *known* suspension points instead of being forcefully preempted at any point of
-its execution.
+### ジャイロスコープ
 
-### Gyroscopes
+Punch-o-meter の演習の一環として、3 次元の加速度の変化を測定するために加速度計を使いました。しかし、ジャイロスコープのような別のモーションセンサーもあり、これを使うと 3 次元での「回転」の変化を測定できます。
 
-As part of our Punch-o-meter exercise, we used the Accelerometer to measure changes in acceleration
-in three dimensions. But there are other motion sensors such as gyroscopes, which allows us to
-measure changes in "spin" in three dimensions.
+これは、転倒を避けたいロボットのような特定のシステムを構築しようとするときに非常に役立ちます。さらに、ジャイロスコープのようなセンサーから得られるデータは、センサーフュージョンと呼ばれる技法を使って加速度計のデータと組み合わせることもできます（詳細は以下を参照してください）。
 
-This can be very useful when trying to build certain systems, such as a robot that wants to avoid
-tipping over. Additionally, the data from a sensor like a gyroscope can also be combined with data
-from accelerometer using a technique called Sensor Fusion (see below for more information).
+### サーボモーターとステッピングモーター
 
-### Servo and Stepper Motors
+一部のモーターは、たとえばラジコンカーを前進または後退させるように、主に一方向または逆方向に回転させるためだけに使われますが、モーターがどのように回転するかをより正確に測定できると便利なこともあります。
 
-While some motors are used primarily just to spin in one direction or the other, for example driving
-a remote control car forwards or backwards, it is sometimes useful to measure more precisely how a
-motor rotates.
+マイクロコントローラを使ってサーボモーターやステッピングモーターを駆動できます。これにより、モーターが何回転するかをより正確に制御でき、さらにはモーターを特定の位置に位置決めすることもできます。たとえば、時計の針を特定の方向に動かしたい場合などです。
 
-A microcontroller can be used to drive Servo or Stepper motors, which allow for more precise control
-of how many turns are being made by the motor, or can even position the motor in one specific place,
-for example if we wanted to move the arms of a clock to a particular direction.
+### センサーフュージョン
 
-### Sensor fusion
+micro:bit には 2 つのモーションセンサー、加速度計と磁力計が搭載されています。  それぞれ単体では、（固有）加速度と（地球の）磁場を測定します。  しかし、これらの量は「融合」して、より有用なものにできます。つまり、どの単一のセンサーよりも測定誤差が少ない、ボードの姿勢の「ロバストな」測定値です。
 
-The micro:bit contains two motion sensors: an accelerometer and a magnetometer.  On their own these
-measure (proper) acceleration and (the Earth's) magnetic field.  But these magnitudes can be "fused"
-into something more useful: a "robust" measurement of the orientation of the board, with less
-measurement error than that of any single sensor.
-
-This idea of deriving more reliable data from different sources is known as sensor fusion.
+異なるソースからより信頼性の高いデータを導き出すこの考え方は、センサーフュージョンと呼ばれます。
 
 ---
 
-So where to next? 
+では、次はどこへ進めばよいのでしょうか？
 
-First and foremost, join us on the [Rust Embedded matrix channel]. Lots of people who contribute or
-work on embedded software hang out there, including, for example, the people who wrote the
-`microbit` BSP, the `nrf52-hal` crate, the `embedded-hal` crates, etc. We are happy to help you get
-started or move on with embedded programming in Rust!
+まず何よりも、[Rust Embedded matrix channel] に参加してください。そこには、組み込みソフトウェアに貢献している人や関わっている人がたくさん集まっています。たとえば、`microbit` BSP、`nrf52-hal` クレート、`embedded-hal` クレート群などを書いた人たちもいます。Rust での組み込みプログラミングを始めるときにも、さらに先へ進みたいときにも、私たちは喜んでお手伝いします！
 
 [Rust Embedded matrix channel]: https://matrix.to/#/#rust-embedded:matrix.org
 
-There are many other options:
+ほかにも多くの選択肢があります:
 
-- You could check out the examples in the [`microbit-v2`] board support crate. All those examples
-  work for the micro:bit board you have.
+- [`microbit-v2`] ボードサポートクレートのサンプルを見てみるのもよいでしょう。そこにあるサンプルはすべて、手元の micro:bit ボードで動作します。
 
 [`microbit-v2`]: https://github.com/nrf-rs/microbit/
 
-- If you are looking for a general overview of what is available in Rust Embedded right now check
-  out the [Awesome Rust Embedded] list.
+- 現在 Rust Embedded で何が利用できるかを概観したいなら、[Awesome Rust Embedded] のリストを見てみてください。
 
 [Awesome Rust Embedded]: https://github.com/rust-embedded/awesome-embedded-rust/
 
-- You could check out [Embassy]. This is a modern efficient cooperative multitasking framework that
-  supports concurrent execution using Rust `async/await`.
+- [Embassy] を見てみるのもよいでしょう。これは、Rust の `async/await` を使った並行実行をサポートする、モダンで効率的な協調的マルチタスキング・フレームワークです。
 
 [Embassy]: https://embassy.dev
 
-- You could check out Real-Time Interrupt-driven Concurrency [RTIC]. RTIC is a very efficient
-  preemptive multitasking framework that supports task prioritization and deadlock-free execution.
+- Real-Time Interrupt-driven Concurrency [RTIC] を見てみるのもよいでしょう。RTIC は、タスクの優先順位付けとデッドロックのない実行をサポートする、非常に効率的なプリエンプティブ・マルチタスキング・フレームワークです。
 
 [RTIC]: https://rtic.rs
 
-- You could check out more abstractions of the [`embedded-hal`] project and maybe even try and write
-  your own platform agnostic driver based on it.
+- [`embedded-hal`] プロジェクトのさらに多くの抽象化を調べてみたり、それをベースに独自のプラットフォーム非依存ドライバを書いてみたりするのもよいでしょう。
 
 [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 
-- You could try running Rust on a different development board. Popular boards such as the ESP-32,
-  Raspberry Pi, or Arduino have their own active Rust developer communities.
+- 別の開発ボードで Rust を動かしてみるのもよいでしょう。ESP-32、Raspberry Pi、Arduino のような人気のボードには、それぞれ活発な Rust 開発者コミュニティがあります。

@@ -1,27 +1,26 @@
-# Naive approach and `write!`
+# 素朴なアプローチと `write!`
 
-## Naive approach
+## 素朴なアプローチ
 
-You probably came up with a program similar to the following (`examples/naive-send-string.rs`):
+おそらく、次のようなプログラムを思いついたでしょう（`examples/naive-send-string.rs`）:
 
 ```rs
 {{#include examples/naive-send-string.rs}}
 ```
 
-While this is a perfectly valid implementation, at some point you might want to have all the nice
-perks of `print!` such as argument formatting and so on. If you are wondering how to do that, read
-on.
+これは完全に有効な実装ですが、いずれは引数のフォーマットなど、`print!` の持つ便利な
+機能をすべて使いたくなるかもしれません。どうすればそれができるのか気になるなら、このまま読み進めてください。
 
-## `write!` and `core::fmt::Write`
+## `write!` と `core::fmt::Write`
 
-The `core::fmt::Write` trait allows us to use any struct that implements it in basically the same
-way as we use `print!` in the `std` world.  In this case, the `Uart` struct from the `nrf` HAL does
-implement `core::fmt::Write` so we can refactor our previous program into this
-(`examples/send-string.rs`):
+`core::fmt::Write` トレイトを使うと、それを実装する任意の構造体を、`std` の世界で
+`print!` を使うのと基本的に同じ方法で使えるようになります。この場合、`nrf` HAL の `Uart`
+構造体は `core::fmt::Write` を実装しているので、先ほどのプログラムを次のようにリファクタリング
+できます（`examples/send-string.rs`）:
 
 ```rs
 {{#include examples/send-string.rs}}
 ```
 
-If you flash this program onto your micro:bit, you'll see that it is functionally equivalent to the
-iterator-based program you came up with.
+このプログラムを micro:bit に書き込むと、あなたが思いついたイテレータベースのプログラムと
+機能的に等価であることがわかるでしょう。

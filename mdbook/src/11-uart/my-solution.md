@@ -1,6 +1,6 @@
-# My solution
+# 私の解答
 
-You will find my solution in `src/main.rs`:
+私の解答は `src/main.rs` にあります:
 
 ```rust
 {{#include src/main.rs}}

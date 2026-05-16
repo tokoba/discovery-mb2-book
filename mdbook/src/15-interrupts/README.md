@@ -1,73 +1,68 @@
-## Interrupts
+## 割り込み
 
-So far, we've touched a bunch of hardware on the MB2. We've read out buttons, waited for timers, done serial communication, and talked to devices using I2C.  Each of these things involved waiting for one or more peripherals to become ready. So far, our waiting was by "polling": repeatedly asking the peripheral if it's done yet, until it is.
+ここまでで、MB2 上のさまざまなハードウェアに触れてきました。ボタンを読み取り、タイマーを待ち、シリアル通信を行い、I2C を使ってデバイスとやり取りしてきました。これらはいずれも、1 つ以上のペリフェラルの準備が整うまで待つ必要がありました。これまでは、その待機を「ポーリング」で行っていました。つまり、完了したかどうかをペリフェラルに繰り返し問い合わせ、完了するまでそれを続ける方法です。
 
-Seeing as our microcontroller only has a single CPU core, it cannot do anything else while it waits. On top of that, a CPU core continuously polling a peripheral wastes power, and in a lot of applications, we can't have that. Can we do better?
+このマイクロコントローラには CPU コアが 1 つしかないので、待っている間はほかのことができません。さらに、CPU コアがペリフェラルを継続的にポーリングすると電力を無駄にしますし、多くのアプリケーションではそれは許容できません。もっと良い方法はあるでしょうか？
 
-Luckily, we can! While our little microcontroller can't compute things in parallel, it can easily switch between different tasks during execution, responding to events from the outside world. This switching is done using a feature called "interrupts".
+幸い、それは可能です！ この小さなマイクロコントローラは処理を並列には実行できませんが、実行中に異なるタスクを簡単に切り替え、外界からのイベントに応答できます。この切り替えは「割り込み」と呼ばれる機能で実現されます。
 
-Interrupts are aptly named: they allow peripherals to actually interrupt the core program execution at any point in time. On our MB2's nRF52833, peripherals are connected to the core's Nested Vectored Interrupt Controller (NVIC). The NVIC can stop the CPU in its tracks, instruct it to go do something else, and once that's done, get the CPU back to what it was doing before it was interrupted. We'll cover the Nested and Vectored parts of the interrupt controller later: let's first focus on how the core switches tasks.
+割り込みという名前はまさにその通りで、ペリフェラルがコアのプログラム実行を実際にいつでも中断できるようにします。MB2 の nRF52833 では、ペリフェラルはコアの Nested Vectored Interrupt Controller（NVIC）に接続されています。NVIC は CPU をその場で停止させ、別の処理を行うよう指示し、それが終われば割り込まれる前にしていた作業へ CPU を戻せます。割り込みコントローラの Nested と Vectored の部分については後で扱います。まずは、コアがどのようにタスクを切り替えるかに注目しましょう。
 
-### Handling Interrupts
+### 割り込みの処理
 
-The model of computation used by our NRF52833 is the one used by almost every modern CPU. Inside the CPU are "scratch-pad" storage locations known as "CPU registers". (Confusingly, these CPU registers are different from the "device registers" we discussed earlier in the [Registers] chapter.)  To carry out a computation, the CPU typically loads values from memory to CPU registers, performs the computation using the register values, then stores the result back to memory.  (This is known as a "load-store architecture".)
+NRF52833 が使う計算モデルは、ほとんどすべての現代的な CPU で使われているものです。CPU の内部には、「CPU レジスタ」と呼ばれる作業用の記憶領域があります。（やや紛らわしいですが、この CPU レジスタは、前の [Registers] 章で説明した「デバイスレジスタ」とは別物です。）計算を実行するために、CPU は通常、メモリから CPU レジスタへ値を読み込み、レジスタ内の値を使って計算を行い、その結果をメモリへ書き戻します。（これは「ロードストアアーキテクチャ」として知られています。）
 
-Everything about the computation the CPU is currently running is stored in the CPU registers. If the core is going to switch tasks, it must store the contents of the CPU registers somewhere so that the new task can use the registers as its own scratch-pad. When the new task is complete the CPU can then restore the register values and restart the old computation.  Sure enough, that is exactly the first thing the core does in response to an interrupt request: it stops what it's doing immediately and stores the contents of the CPU registers on the stack.
+CPU が現在実行している計算に関する情報はすべて、CPU レジスタに保存されています。コアがタスクを切り替えるなら、新しいタスクがレジスタを自分の作業領域として使えるように、CPU レジスタの内容をどこかに保存しなければなりません。新しいタスクが完了すると、CPU はレジスタの値を復元して元の計算を再開できます。実際、それこそがコアが割り込み要求に応答して最初に行うことです。すぐに現在の処理を停止し、CPU レジスタの内容をスタックに保存します。
 
-The next step is actually jumping to the code that should be run in response to an interrupt.  An Interrupt Service Routine (ISR), often referred to as an interrupt "handler", is a special function in your application code that gets called by the core in response to interrupts. An "interrupt table" in memory contains an "interrupt vector" for every possible interrupt: the interrupt vector indicates what ISR to call when a specific interrupt is received. We describe the details of ISR vectoring in the [NVIC and Interrupt Priority] section.
+次の段階では、割り込みに応答して実行すべきコードへ実際にジャンプします。Interrupt Service Routine（ISR）は、しばしば割り込み「ハンドラ」とも呼ばれ、割り込みに応答してコアから呼び出される、アプリケーションコード内の特別な関数です。メモリ上の「割り込みテーブル」には、起こり得るすべての割り込みに対応する「割り込みベクタ」が含まれています。割り込みベクタは、特定の割り込みを受信したときにどの ISR を呼び出すかを示します。ISR のベクタリングの詳細は [NVIC and Interrupt Priority] セクションで説明します。
 
-An ISR function "returns" using a special return-from-interrupt machine instruction that causes the CPU to restore the CPU registers and jump back to where it was before the ISR was called.
+ISR 関数は、特別な割り込み復帰（return-from-interrupt）機械命令を使って「リターン」します。この命令により、CPU は CPU レジスタを復元し、ISR が呼び出される前の位置へジャンプして戻ります。
 
-## Poke The MB2
+## MB2 をつつく
 
-Let's define an ISR and configure an interrupt to "poke" the MB2 when Button A is pressed
-(`examples/poke.rs`). The board will respond by saying "ouch" and panicking.
+ISR を定義し、Button A が押されたときに MB2 を「つつく」割り込みを設定してみましょう
+（`examples/poke.rs`）。ボードは「ouch」と言ってパニックを起こします。
 
 ```rust
 {{#include examples/poke.rs}}
 ```
 
-The ISR handler function is "special". The name `GPIOTE` is required here, indicating
-that this ISR should be stored at the entry for the `GPIOTE` interrupt in the interrupt table.
+ISR ハンドラ関数は「特別」です。ここでは名前を `GPIOTE` にする必要があり、これは
+この ISR が割り込みテーブル内の `GPIOTE` 割り込み用エントリに格納されるべきことを示しています。
 
-The `#[interrupt]` decoration is used at compile time to mark a function to be treated specially as
-an ISR. (This is a "proc macro": you can read more about it in the [Rust book] if you wish.)
+`#[interrupt]` デコレーションは、コンパイル時に関数を ISR として特別扱いする印を付けるために
+使われます。（これは「proc macro」です。必要なら [Rust book] で詳しく読めます。）
 
-Essentially, a "proc macro" translates source code into other source code. If you are curious as to what any particular macro use translates into,
-you could expand that macro invocation. You can do this by using either the Tools in the [Rust Playground] or the "rust-analyzer: Expand macro" command in your IDE.
+要するに、「proc macro」はソースコードを別のソースコードへ変換します。特定のマクロの使用がどのようなコードに変換されるのか気になるなら、
+そのマクロ呼び出しを展開できます。[Rust Playground] の Tools か、IDE の「rust-analyzer: Expand macro」コマンドを使えばできます。
 
-Marking a function with `#[interrupt]` implies several special things about the function:
+`#[interrupt]` を関数に付けると、その関数にはいくつかの特別な性質が生じます。
 
-* The compiler will check that the function takes no arguments and returns no value (or never returns). The CPU has no
-  arguments to provide to an ISR, and no place to put a return value from the ISR. This is because interrupt handlers have their own call stack (at least *conceptually* if not always in practice).
+* コンパイラは、その関数が引数を取らず、戻り値も返さないこと（あるいは決して戻らないこと）を検査します。CPU には ISR に渡す
+  引数がなく、ISR からの戻り値を置く場所もありません。これは、割り込みハンドラが独自のコールスタックを持つからです（少なくとも *概念上は*、実際には常にそうとは限りません）。
 
-* A vector to this function (that is a function pointer) will be placed at the location in the interrupt table
-  which corresponds to the function's name.
+* この関数を指すベクタ（つまり関数ポインタ）が、その関数名に対応する割り込みテーブル内の位置に
+  配置されます。
 
-* The compiler will prevent directly calling the ISR from normal code.
+* コンパイラは、通常のコードから ISR を直接呼び出すことを防ぎます。
 
-There are two steps to configure the interrupt. First, the GPIOTE must be set up to generate an
-interrupt when the pin connected to Button A goes from high to low voltage. Second, the NVIC must be
-configured to allow the interrupt. Order matters a bit: doing things in the "wrong" order may
-generate an interrupt before you are ready to handle it.
+割り込みを設定するには 2 つの手順があります。まず、Button A につながったピンの電圧が high から low に変化したときに割り込みを生成するよう、
+GPIOTE を設定しなければなりません。次に、その割り込みを許可するよう NVIC を設定する必要があります。順序は少し重要で、「間違った」順番で行うと、
+処理する準備ができる前に割り込みが発生することがあります。
 
-**Note** As with most microcontrollers, there is a lot of flexibility in when the GPIOTE can generate an interrupt. Interrupts can be generated on low-to-high pin transition, high-to-low (as here), any change ("edge"), when low, or when high. On the nRF52833, interrupts generate an event that must be manually cleared in the ISR to ensure that the ISR is not called a second time for the same interrupt. Other microcontrollers may work a little differently — you should read Rust crate and microcontroller documentation to understand the details on a different board.
+**注** ほとんどのマイクロコントローラと同様に、GPIOTE がいつ割り込みを生成するかには大きな柔軟性があります。割り込みは、ピンが low から high に遷移したとき、high から low に遷移したとき（ここで使っているもの）、任意の変化（「エッジ」）、low のとき、または high のときに生成できます。nRF52833 では、割り込みはイベントを生成し、そのイベントは同じ割り込みに対して ISR が 2 回目に呼び出されないよう、ISR 内で手動でクリアしなければなりません。ほかのマイクロコントローラでは少し動作が異なることがあります。別のボードでの詳細を理解するには、Rust crate とマイクロコントローラのドキュメントを読むべきです。
 
-When you push the A Button, you will see an "ouch" message and then a panic. Why does the interrupt
-handler call `panic!()`? Try commenting the `panic!()` call out and see what happens when you push
-the button. You will see "ouch" messages scroll off the screen. The NVIC records when an interrupt
-has been issued: that "event" is kept until it is explicitly cleared by the running program. Without
-the `panic!()`, when the interrupt handler returns the NVIC will (in this case) re-enable the
-interrupt, notice that there is still an interrupt event pending, and run the handler again. This
-will continue forever: each time the interrupt handler returns it will be called again. As we will
-see in a bit, the interrupt indication can be cleared from within the interrupt handler using the
-`reset_event()` peripheral method.
+A ボタンを押すと、「ouch」というメッセージが表示され、その後パニックになります。なぜ割り込み
+ハンドラは `panic!()` を呼ぶのでしょうか？ `panic!()` の呼び出しをコメントアウトして、ボタンを押したときに何が起こるか見てみてください。画面には
+「ouch」というメッセージが流れ続けるはずです。NVIC は割り込みが発行されたことを記録します。その「イベント」は、実行中のプログラムが明示的にクリアするまで保持されます。`panic!()` がないと、
+割り込みハンドラが戻ったときに NVIC は（この場合）割り込みを再び有効化し、まだ保留中の割り込みイベントがあることに気付いて、ハンドラを再度実行します。これは
+永遠に続きます。割り込みハンドラが戻るたびに、また呼び出されます。すぐに見るように、割り込みの通知は割り込みハンドラの内側から
+`reset_event()` ペリフェラルメソッドを使ってクリアできます。
 
-You may define ISRs for many different interrupt sources: when I2C is ready, when a timer expires,
-and on and on. Inside an ISR you can do pretty much anything you want, but it's good practice to
-keep the interrupt handlers short and quick.
+I2C の準備ができたとき、タイマーが期限に達したときなど、さまざまな割り込み要因に対して ISR を定義できます。ISR の中ではほぼ何でもできますが、
+割り込みハンドラは短く素早く保つのがよい実践です。
 
-Normally, once an ISR is complete the main program continues running just as it would have if the interrupt had not happened. This is a bit of a problem, though: how does your application notice that the ISR has run and done things? Seeing as an ISR doesn't have any input parameters or result, how can ISR code interact with application code?
+通常、ISR が完了すると、メインプログラムは割り込みが起きなかったかのようにそのまま実行を続けます。しかし、ここには少し問題があります。ISR が実行されて何らかの処理を行ったことを、アプリケーションはどうやって知ればよいのでしょうか。ISR には入力引数も結果もないので、ISR のコードはどのようにアプリケーションコードとやり取りできるのでしょうか？
 
 [NVIC and Interrupt Priority]: nvic-and-interrupt-priority.html
 [Registers]: ../09-registers/index.html

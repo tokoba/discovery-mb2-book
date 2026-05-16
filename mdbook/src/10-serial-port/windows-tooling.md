@@ -1,33 +1,33 @@
-# Windows tooling
+# Windows ツール
 
-Start by unplugging your MB2.
+まず、MB2 を取り外します。
 
-Before plugging the MB2 back in, run the following command on the terminal:
+MB2 を再び接続する前に、ターミナルで次のコマンドを実行します。
 
 ``` console
 $ mode
 ```
 
-It will print a list of devices that are connected to your computer. The ones that start with `COM`
-in their names are serial devices. This is the kind of device we'll be working with. Take note of
-all the `COM` ports' `mode` outputs *before* plugging the serial module.
+すると、コンピューターに接続されているデバイスの一覧が表示されます。名前が `COM`
+で始まるものはシリアルデバイスです。これが今回扱う種類のデバイスです。シリアルモジュールを接続する
+*前* の、すべての `COM` ポートの `mode` 出力をメモしておいてください。
 
-Now, plug in the MB2 and run the `mode` command again. If you see a new
-`COM` port appear on the list, then that's the COM port assigned to the
-serial functionality on the MB2.
+次に、MB2 を接続し、再度 `mode` コマンドを実行します。一覧に新しい
+`COM` ポートが表示されたら、それが MB2 の
+シリアル機能に割り当てられた COM ポートです。
 
-Now launch `putty`. A GUI will pop out.
+次に `putty` を起動します。GUI が表示されます。
 
 <p align="center">
-<img title="PuTTY settings" src="../assets/putty-settings.png" width="500" />
+<img title="PuTTY 設定" src="../assets/putty-settings.png" width="500" />
 </p>
 
-On the starter screen, which should have the "Session" category open, pick "Serial" as the
-"Connection type". On the "Serial line" field enter the `COM` device you got on the previous step,
-for example `COM3`.
+起動画面では、"Session" カテゴリーが開いているはずです。そこで "Connection type" として "Serial" を
+選択します。"Serial line" フィールドには、前の手順で確認した `COM` デバイスを入力します。
+たとえば `COM3` です。
 
-Next, pick the "Connection/Serial" category from the menu on the left. On this new view, make sure
-that the serial port is configured as follows:
+次に、左側のメニューから "Connection/Serial" カテゴリーを選択します。この新しい画面で、
+シリアルポートが次のように設定されていることを確認してください。
 
 - "Speed (baud)": 115200
 - "Data bits": 8
@@ -35,12 +35,12 @@ that the serial port is configured as follows:
 - "Parity": None
 - "Flow control": None
 
-Finally, click the Open button. A console will show up now:
+最後に、Open ボタンをクリックします。すると、コンソールが表示されます。
 
 <p align="center">
-<img title="PuTTY console" src="../assets/putty-console.png" width="500" />
+<img title="PuTTY コンソール" src="../assets/putty-console.png" width="500" />
 </p>
 
-If you type on this console, the yellow LED on top of the MB2 will blink. Each keystroke
-should make the LED blink once. Note that the console won't echo back what you type so the screen
-will remain blank.
+このコンソールで入力すると、MB2 の上部にある黄色の LED が点滅します。キーを 1 回押すごとに、
+LED が 1 回点滅するはずです。なお、コンソールには入力した内容はエコーバックされないため、画面には
+何も表示されないままです。

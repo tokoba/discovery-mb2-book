@@ -1,7 +1,7 @@
-# Echo server
+# エコーサーバー
 
-Let's merge transmission and reception into a single program and write an echo server. An echo
-server sends back to the client the same text it receives. For this application, the microcontroller
-will be the server and you and your computer will be the client.
+送信と受信を単一のプログラムに統合し、エコーサーバーを書いてみましょう。エコー
+サーバーは、受信したのと同じテキストをクライアントに送り返します。このアプリケーションでは、マイクロコントローラー
+がサーバーとなり、あなたとあなたのコンピューターがクライアントになります。
 
-This should be straightforward to implement. (hint: do it byte by byte)
+これは簡単に実装できるはずです。（ヒント: 1バイトずつ行ってください）

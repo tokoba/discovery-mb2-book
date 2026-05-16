@@ -1,49 +1,49 @@
-# Serial Port
+# シリアルポート
 
-The closest thing to a universal I/O standard for modern day embedded boards is the "serial port". Pretty much every microcontroller has a way to make a few of its pins act as a serial port, and pretty much every microcontroller board makes these pins easy to get to. The MB2 is no exception.
+現代の組み込みボードにおいて、ほぼ普遍的な I/O 標準に最も近いものが「シリアルポート」です。ほとんどすべてのマイクロコントローラーには、いくつかのピンをシリアルポートとして動作させる方法があり、またほとんどすべてのマイクロコントローラーボードではそれらのピンに簡単にアクセスできるようになっています。MB2 も例外ではありません。
 
-In this chapter, we will describe what a serial port even is. We will then show you how to set up your computer with a "virtual serial port" using USB and use that virtual port with "terminal software" to talk to a serial port on the MB2.
+この章では、まずシリアルポートとはそもそも何かを説明します。そのうえで、USB を使ってコンピューターに「仮想シリアルポート」を設定し、その仮想ポートを「ターミナルソフトウェア」とともに使って MB2 上のシリアルポートとやり取りする方法を示します。
 
-So what's this [serial port]? It's a place where two devices exchange data one bit at a time (*serially*) using one data line in each direction (*full-duplex*) plus a common ground. The serial port originated as "RS-232": see the history later in this chapter for details. However, the protocol spoken on the transmit and receive lines doesn't have an official name I'm aware of — it's just "serial" or maybe "async serial" or "UART serial".
+では、この[serial port]とは何でしょうか。これは、2 つのデバイスが、各方向に 1 本ずつのデータ線（*全二重で*）と共通グラウンドを使い、データを 1 ビットずつ（*直列に*）やり取りする場所です。シリアルポートはもともと「RS-232」として始まりました。詳しくはこの章の後半にある歴史の節を参照してください。ただし、送信線と受信線で使われるプロトコルには、私の知る限り正式名称がありません。単に「serial」、あるいは「async serial」や「UART serial」と呼ばれる程度です。
 
-To be clear: most communication channels in modern computers are serial. USB (the "Universal Serial Bus") is a serial channel; I2C (which we will talk about later) is a serial channel. This chapter and the next are *not* about the general concept of serial communication: these chapters are about a specific thing called a "serial port" that has its own implementation and history.
+はっきりさせておくと、現代のコンピューターにおける通信チャネルの大半はシリアルです。USB（「Universal Serial Bus」）はシリアルチャネルですし、I2C（これについては後で説明します）もシリアルチャネルです。この章と次章は、シリアル通信という一般概念についての話では *ありません*。これらの章で扱うのは、独自の実装と歴史を持つ「シリアルポート」と呼ばれる特定のものです。
 
-Serial port communication is *asynchronous* in the sense that none of the shared lines carries a clock signal. Instead, both parties must agree on roughly how fast data will be sent along the wire *before* the communication occurs. A peripheral called a Universal Asynchronous Receiver/Transmitter (UART) sends bits at the specified rate on its output wire, and watches for the start of bits on its input wire.
-
-<p align="center">
-<img class="white_bg" height="100" title="Serial Protocol" src="../assets/serial-proto.svg" />
-</p>
-
-The serial-port communications protocol works with frames, each carrying a byte of data. Each frame has one *start* bit, 5 to 9 bits of payload data (sent lsb-to-msb; modern applications rarely send a 9-bit byte; 7 or fewer bits in a frame will be left-padded to an 8-bit byte with zeros) and 1 to 2 *stop bits*.  In the diagram above, an ASCII 'E' character is sent using 8 data bits and 1 stop bit.
-
-The speed of the protocol is known as *baud rate* and it's quoted in bits per second (bps). (If you're thinking that this sounds wrong — it is. "Baud" is supposed to be *symbols* per second; a symbol should correspond to a frame; even if a data bit is regarded as the "symbol" they aren't sent at this rate because of the rest of the protocol. It's a convention, and doesn't have to make sense.) Historically common baud rates for UART serial are 9600bps, 19200bps, and 115200bps, but it is not uncommon in our modern world to send data at 921,600bps.
-
-With the "normal" configuration of 1 start bit, 8 bits of data, 1 stop bit and a bit rate of 921.6K bps we can send and receive 92.16K bytes per second — fast enough to transmit single-channel uncompressed CD audio. At the bit rate of 115,200 bps that we'll be using, we can send and receive 11.52K bytes per second. This is fine for most purposes.
-
-We'll be using a serial port (indirectly) to exchange data between the MB2 and your computer. Now you might be asking yourself: why exactly aren't we using RTT for this like we did before? RTT is a protocol that is meant to be used solely for debugging. You will not find devices that use RTT to communicate with other devices. However, serial communication is used quite often. For example, some GPS receivers send the position information they receive via serial. In addition RTT, like many debugging protocols, is slow compared to serial transfer rates.
+シリアルポート通信は、共有されるどの線にもクロック信号が載っていないという意味で *非同期* です。その代わり、通信を行う *前に*、双方がワイヤ上でデータをどれくらいの速さで送るかをおおよそ合意しておく必要があります。Universal Asynchronous Receiver/Transmitter（UART）と呼ばれる周辺回路は、指定された速度で出力線にビットを送信し、入力線上でビットの開始を監視します。
 
 <p align="center">
-<img class="white_bg" height="500" title="Serial" src="../assets/serial.svg" />
+<img class="white_bg" height="100" title="シリアルプロトコル" src="../assets/serial-proto.svg" />
 </p>
 
-Today's computers don't usually have a serial port, and even if they do the voltage they use (+5V on a modern serial port, ±12V on an ancient RS-232 port) is outside the range that the MB2 hardware will accept and may result in damaging it. *You can't directly connect your computer to the microcontroller.* 
+シリアルポート通信プロトコルはフレーム単位で動作し、各フレームは 1 バイトのデータを運びます。各フレームには 1 つの *スタート* ビット、5〜9 ビットのペイロードデータ（lsb から msb の順に送信されます。現代のアプリケーションで 9 ビットバイトを送ることはまれです。フレーム内のビット数が 7 以下の場合は、左側を 0 で埋めて 8 ビットバイトになります）、そして 1〜2 個の *ストップビット* があります。上の図では、ASCII の 'E' 文字が 8 データビットと 1 ストップビットを使って送信されています。
+
+このプロトコルの速度は *ボーレート* と呼ばれ、1 秒あたりのビット数（bps）で表されます。（これが変だと思ったなら、そのとおりです。「Baud」は本来、1 秒あたりの *シンボル数* を表すべきものです。1 つのシンボルは 1 つのフレームに対応すべきですし、仮に 1 データビットを「シンボル」と見なしたとしても、プロトコルの他の部分があるため、それらはこのレートでは送られません。これは慣習であって、理にかなっている必要はありません。）UART シリアルで歴史的によく使われてきたボーレートは 9600bps、19200bps、115200bps ですが、現代では 921,600bps でデータを送ることも珍しくありません。
+
+「通常」の構成である、1 スタートビット、8 データビット、1 ストップビット、ビットレート 921.6K bps では、毎秒 92.16K バイトの送受信ができます。これは単一チャネルの非圧縮 CD オーディオを伝送するのに十分な速さです。今回使用する 115,200 bps のビットレートでは、毎秒 11.52K バイトの送受信ができます。これはほとんどの用途では十分です。
+
+私たちは、MB2 とあなたのコンピューターの間でデータをやり取りするために（間接的に）シリアルポートを使います。ここでこう思うかもしれません。なぜ前と同じように RTT を使わないのでしょうか。RTT は、デバッグ専用に使うことを意図したプロトコルです。RTT を使って他のデバイスと通信するデバイスに出会うことはないでしょう。しかし、シリアル通信はかなり頻繁に使われます。たとえば、一部の GPS 受信機は、受信した位置情報をシリアル経由で送信します。さらに RTT は、多くのデバッグプロトコルと同様に、シリアルの転送速度と比べると低速です。
+
+<p align="center">
+<img class="white_bg" height="500" title="シリアル" src="../assets/serial.svg" />
+</p>
+
+今日のコンピューターには通常シリアルポートがありませんし、仮にあったとしても、その電圧（現代のシリアルポートでは +5V、古い RS-232 ポートでは ±12V）は MB2 のハードウェアが受け入れられる範囲外であり、損傷の原因になるおそれがあります。*コンピューターをマイクロコントローラーに直接接続することはできません。*
 
 <a href="https://en.wikipedia.org/wiki/File:UART_to_USB_adapter.jpg">
 <p align="center">
-<img height="240" title="UART To USB Adapter" src="../assets/UART_to_USB_adapter.jpg" />
+<img height="240" title="UART-USB アダプター" src="../assets/UART_to_USB_adapter.jpg" />
 </p>
 </a>
 
-You *can* buy inexpensive (typically under US$5) USB←→serial converters that will support the +3.3V inputs of most modern microcontroller boards. The board shown above is a common one that I use regularly. We will be talking to the MB2 serial port through the MB2's built-in USB port. However, if you want to connect directly to a hardware serial port, on the MB2 or some other board, a serial converter is the way to go.
+しかし、ほとんどの現代的なマイクロコントローラーボードの +3.3V 入力に対応した、安価な（たいてい US$5 未満の）USB←→シリアル変換器を *購入できます*。上に示したボードは、私が日常的によく使っている一般的なものです。私たちは MB2 に内蔵された USB ポートを通して MB2 のシリアルポートと通信します。しかし、MB2 であれ他のボードであれ、ハードウェアのシリアルポートに直接接続したい場合は、シリアル変換器を使うのがよい方法です。
 
-A separate USB channel on the MB2's USB port can be used to talk to the MB2's built-in USB←→serial converter. (This is the right-hand path in the figure above.) This USB←→serial conversion is implemented using the "[communications microcontroller]" of the MB2: the communications microcontroller exposes a serial interface to the microcontroller and a virtual USB serial interface to your computer. The computer presents a virtual serial interface via the USB CDC-ACM ("Communications Device Class - Abstract Control Model", ugh) device class. The MB2 microcontroller will see your computer as a device connected to its hardware serial port; your computer will see the MB2 serial port as a virtual serial device.
+MB2 の USB ポート上の別の USB チャネルを使って、MB2 内蔵の USB←→シリアル変換器と通信できます。（これは上図の右側の経路です。）この USB←→シリアル変換は、MB2 の「[communications microcontroller]」を使って実装されています。通信マイクロコントローラーは、マイクロコントローラーに対してはシリアルインターフェイスを、コンピューターに対しては仮想 USB シリアルインターフェイスを公開します。コンピューターは、USB CDC-ACM（「Communications Device Class - Abstract Control Model」――やれやれ）デバイスクラスを介して仮想シリアルインターフェイスを提供します。MB2 のマイクロコントローラーからは、あなたのコンピューターがそのハードウェアシリアルポートに接続されたデバイスとして見えます。あなたのコンピューターからは、MB2 のシリアルポートが仮想シリアルデバイスとして見えます。
 
-Now, let's get familiar with the USB serial port interface that your OS offers. Pick a route:
+それでは、OS が提供する USB シリアルポートインターフェイスに慣れていきましょう。次のいずれかを選んでください。
 
 - [Linux/UNIX](nix-tooling.md)
 - [Windows](windows-tooling.md)
 
-For MacOS check out the Linux documentation, although your experience may differ somewhat.
+MacOS の場合は Linux のドキュメントを参照してください。ただし、多少勝手が異なる可能性があります。
 
 [serial port]: https://en.wikipedia.org/wiki/Serial_port
 [communications microcontroller]: ../05-meet-your-software/flash-it.md

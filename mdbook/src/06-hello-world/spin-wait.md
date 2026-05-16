@@ -1,26 +1,25 @@
-# Spin wait
+# スピンウェイト
 
-To blink the LED, we need to wait about a half-second between each change. How do we do that?
+LED を点滅させるには、状態が切り替わるたびに約 0.5 秒待つ必要があります。どうすればよいでしょうか？
 
-Well, here's the dumb way. It's not good, but it's a start. Take a look at `examples/spin-wait.rs`.
+では、まずは間抜けなやり方があります。良いやり方ではありませんが、出発点にはなります。`examples/spin-wait.rs` を見てみましょう。
 
 ```rust
 {{#include examples/spin-wait.rs}}
 ```
 
-Run this with `cargo run --release --example spin-wait` — the `--release` is really important here — and
-you should see the LED on your MB2 flash on and off *about* once per second.
+`cargo run --release --example spin-wait` でこれを実行してください。ここでは `--release` が本当に重要です。すると、MB2 の LED が *だいたい* 1 秒に 1 回のペースで点いたり消えたりするはずです。
 
-Things you might be wondering:
+気になるかもしれないこと:
 
-* **What are those `_` characters in that number?** Rust allows these in numbers and ignores them.
-  It's really convenient to make big numbers more readable. Here we are using them as commas (or
-  whatever the separator is for groups of three digits in your country).
+* **その数値中の `_` 文字は何ですか？** Rust では数値の中にこれを入れることができ、無視されます。
+  大きな数を読みやすくするのにとても便利です。ここでは、これをカンマ（あるいは、
+  あなたの国で 3 桁ごとの区切りに使う任意の区切り記号）として使っています。
 
-* **If the nRF52833 is running at 64MHz, why is the wait loop iterating only 4M times? Shouldn't it
-  be 32M?** The wait loop executes several instructions each time through: the `nop` (see next
-  section), some bookkeeping, and a branch back to the start of the loop. The code generated is
-  roughly this for the first `wait()` call
+* **nRF52833 は 64MHz で動いているのに、なぜ待機ループは 4M 回しか反復しないのですか？ 32M
+  になるべきでは？** 待機ループは、1 回まわるごとに複数の命令を実行します。`nop`（次の節を参照）、
+  いくつかの管理処理、そしてループの先頭への分岐です。生成されるコードは、最初の `wait()` 呼び出しでは
+  おおよそ次のようになります
   
   ```asm
   .LBB1_4:
@@ -30,7 +29,7 @@ Things you might be wondering:
       bne  .LBB1_4
   ```
 
-  and this for the second
+  そして 2 回目では次のようになります
 
   ```asm
   .LBB1_6:
@@ -39,34 +38,32 @@ Things you might be wondering:
       bne	.LBB1_6
   ```
 
-  This is only three or four instructions, but the backward branch may cost an extra bit.  Notice
-  that these *are not the same:* the compiler chooses to emit different instructions for the first
-  and second wait loops. See "it varies depending" below.
+  これは 3 命令か 4 命令しかありませんが、後方分岐には少し余計なコストがかかるかもしれません。
+  これらが *同じではない* ことに注意してください。コンパイラは、最初と 2 回目の待機ループで異なる命令を
+  出力することを選んでいます。下の「状況によって変わる」を見てください。
   
-  Still, we're executing about 4 instructions per loop iteration. This means that on our 64MHz CPU a
-  half-second spin should take 64M/2/4 = 8M iterations to complete. So something is slowing us down
-  by a factor of 2. What? I dunno. This whole thing is terrible.
+  それでも、ループ 1 回あたり約 4 命令を実行しています。つまり、64MHz の CPU では、0.5 秒のスピンは
+  完了までに 64M/2/4 = 8M 回の反復が必要なはずです。ということは、何かが私たちを 2 倍遅くしています。
+  何かって？ さあ。これ全体がひどいのです。
 
-* **Why is `--release` so all-important?** Try without it. Notice that the LED is still flashing on
-  and off, but with a period of *many* seconds. The wait loop is now unoptimized and is taking many
-  instructions each time through.
+* **なぜ `--release` がそんなに重要なのですか？** これなしで試してみてください。LED はまだ点いたり消えたり
+  していますが、その周期は *何秒も* になります。待機ループが最適化されておらず、1 回まわるたびに多くの命令を
+  実行しているためです。
 
-* **What is that `nop()` call and why is it there?** We shall answer this in the next section.
+* **その `nop()` 呼び出しとは何で、なぜそこにあるのですか？** これについては次の節で答えます。
 
-* **Why do you refer to this as "the dumb way"?**
+* **なぜこれを「間抜けなやり方」と呼ぶのですか？**
 
-  * **It isn't precise.** Trying to tune that loop to reliably hit exactly 0.5 seconds is… not
-    really a thing.
+  * **正確ではありません。** そのループを調整して毎回きっちり 0.5 秒に合わせるというのは……あまり現実的では
+    ありません。
 
-  * **It varies depending.** Different CPU? Different compilation flags? Different anything really?
-    Now the timing has changed.
+  * **状況によって変わります。** CPU が違う？ コンパイルフラグが違う？ 実際、何かが違う？ それだけでタイミングが
+    変わります。
 
-  * **It sucks power.** The CPU is running instructions as fast as it can, just to stay in place.
-    If there's nothing else for it to do, it should quietly sleep until it is needed again. This
-    doesn't matter much if you have USB power. But if you hook up your MB2 using the battery pack
-    you'll really feel this.
+  * **電力を食います。** CPU は、その場にとどまるだけのために、できる限り高速に命令を実行し続けています。
+    ほかにやることがないなら、再び必要になるまで静かにスリープすべきです。USB 給電なら、これはそれほど
+    問題になりません。しかし、バッテリーパックで MB2 をつないでいると、これを本当に実感するでしょう。
 
-In the next section, we'll discuss `nop()`. After that, we'll talk more about the other things about
-our blinky that need improving.
+次の節では、`nop()` について説明します。その後で、この blinky のほかに改善が必要な点についてさらに話します。
 
-For such a simple program, this is a pretty complicated program. That's why we start with blinky.
+こんなに単純なプログラムにしては、これはかなり複雑なプログラムです。だからこそ、最初に blinky から始めるのです。

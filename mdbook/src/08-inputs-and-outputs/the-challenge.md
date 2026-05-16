@@ -1,15 +1,15 @@
-# The challenge
+# 課題
 
-Now it’s your turn to put polling into practice. Your task is to implement a simple program that uses button polling to display directional arrows based on user input:
+今度は、あなたがポーリングを実践する番です。課題は、ボタンのポーリングを使って、ユーザー入力に応じた方向矢印を表示するシンプルなプログラムを実装することです。
 
-- If Button A is pressed, display a left arrow (←) on the LED matrix.
-- If Button B is pressed, display a right arrow (→) on the LED matrix.
-- If neither button is pressed, display a single lit LED at the center of the matrix.
+- ボタン A が押された場合は、LED マトリックスに左向きの矢印 (←) を表示します。
+- ボタン B が押された場合は、LED マトリックスに右向きの矢印 (→) を表示します。
+- どちらのボタンも押されていない場合は、マトリックスの中央に 1 つだけ点灯した LED を表示します。
 
-You'll need to:
+必要なことは次のとおりです。
 
-- Initialize the variables for the LED and the buttons.
-- Continuously poll Button A and Button B.
-- Update the LED display according to the button state with a clear indication of each state (left, right, or neutral).
+- LED とボタン用の変数を初期化する。
+- ボタン A とボタン B を継続的にポーリングする。
+- ボタンの状態に応じて、各状態（左、右、またはニュートラル）が明確にわかるように LED 表示を更新する。
 
-I hope you don't mess up! It's *so* hard to share the road with people who don't use their turn signals properly.
+失敗しないことを願っています！ ウインカーをちゃんと出さない人と道路を共有するのは、*本当に*大変ですからね。

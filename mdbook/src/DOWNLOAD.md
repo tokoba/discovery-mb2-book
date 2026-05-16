@@ -1,4 +1,4 @@
-# 📥 download ePUB version of the book
+# 📥 書籍のePUB版をダウンロード
 
 
-You can download the EPUB version of this book here:  [Download](/discovery-mb2/Rust%20Embedded%20MB2%20Discovery%20Book.epub)
+この書籍のEPUB版はここからダウンロードできます:  [ダウンロード](/discovery-mb2/Rust%20Embedded%20MB2%20Discovery%20Book.epub)

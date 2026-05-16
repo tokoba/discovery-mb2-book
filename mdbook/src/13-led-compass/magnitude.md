@@ -1,10 +1,6 @@
-# Magnitude
+# 大きさ
 
-How strong is the Earth's magnetic field?  According to the documentation about the
-[`magnetic_field()`] method the `x` `y` `z` values we are getting are in nanoteslas. That means the
-only thing we have to compute in order to get the magnitude of the magnetic field in nanoteslas is
-the magnitude of the 3D vector that our `x` `y` `z` values describe. As you might remember from
-school this is simply:
+地球の磁場はどれくらい強いのでしょうか？ [`magnetic_field()`] メソッドのドキュメントによると、取得している `x` `y` `z` の値の単位はナノテスラです。つまり、磁場の大きさをナノテスラで求めるために計算しなければならないのは、`x` `y` `z` の値が表す 3 次元ベクトルの大きさだけです。学校で習ったのを覚えているかもしれませんが、これは単に次のように求められます:
 
 ``` rust
 use libm::sqrtf;
@@ -13,30 +9,27 @@ let magnitude = sqrtf(x * x + y * y + z * z);
 
 [`magnetic_field()`]: https://docs.rs/lsm303agr/1.1.0/lsm303agr/struct.Lsm303agr.html#method.magnetic_field
 
-Rust does not have floating-point math functions such as `sqrtf()` in `core`, so our `no_std`
-program has to get an implementation from somewhere. We use the [libm] crate for this.
+Rust の `core` には `sqrtf()` のような浮動小数点数学関数がないため、`no_std`
+プログラムではどこかから実装を入手する必要があります。そのために [libm] クレートを使います。
 
 [libm]: https://crates.io/crates/libm
 
-Putting all this together in a program (`examples/magnitude.rs`):
+これらをすべてプログラム (`examples/magnitude.rs`) にまとめると、次のようになります:
 
 ``` rust
 {{#include examples/magnitude.rs}}
 ```
 
-Run this with `cargo run --example magnitude`.
+これを `cargo run --example magnitude` で実行してください。
 
-This program will report the magnitude (strength) of the magnetic field in nanotesla (`nT`) and
-milligauss (`mG`, where 1 `mG` = 100 `nT`). The magnitude of the Earth's magnetic field is in the
-range of `250 mG` to `650 mG` (the magnitude varies depending on your geographical location) so you
-ideally would see a value vaguely in that range. Your value will likely be off quite a bit because
-the sensor has not been calibrated: see [appendix 3] for calibration. With calibration, I see a
-magnitude of around `340 mG`.
+このプログラムは、磁場の大きさ（強さ）をナノテスラ (`nT`) と
+ミリガウス (`mG`、1 `mG` = 100 `nT`) で報告します。地球の磁場の大きさは
+`250 mG` から `650 mG` の範囲にあります（大きさは地理的な位置によって変化します）ので、理想的にはその範囲にだいたい収まる値が見えるはずです。センサーがまだキャリブレーションされていないため、値はかなりずれている可能性があります。キャリブレーションについては [appendix 3] を参照してください。キャリブレーションすると、私はおよそ `340 mG` の大きさを確認しています。
 
 [appendix 3]: ../appendix/3-mag-calibration/index.html
 
-Some questions:
+いくつか質問があります:
 
-- Without moving the board, what value do you see? Do you always see the same value?
+- ボードを動かさない状態では、どのような値が見えますか？ 常に同じ値が見えますか？
 
-- If you rotate the board, does the magnitude change? Should it change?
+- ボードを回転させると、大きさは変化しますか？ 変化するべきでしょうか？

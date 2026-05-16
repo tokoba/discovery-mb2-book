@@ -1,27 +1,14 @@
-# Using a driver
+# ドライバを使う
 
-As we already discussed in chapter 5 `embedded-hal` provides abstractions
-which can be used to write platform independent code that can interact with
-hardware. In fact all the methods we have used to interact with hardware
-in chapter [LED roulette](../07-led-roulette/index.html) and up until now in this chapter were from traits, defined by `embedded-hal`.
-Now we'll make actual use of the traits `embedded-hal` provides for the first time.
+第5章ですでに説明したとおり、`embedded-hal` は、ハードウェアとやり取りできるプラットフォームに依存しないコードを書くために使える抽象化を提供します。実際、[LED ルーレット](../07-led-roulette/index.html) の章とこの章のここまででハードウェアとやり取りするために使ってきたすべてのメソッドは、`embedded-hal` で定義されたトレイトのものでした。ここで初めて、`embedded-hal` が提供するトレイトを実際に使います。
 
-It would be pointless to implement a driver for our LSM303AGR for every platform
-embedded Rust supports (and new ones that might eventually pop up). To avoid this a driver
-can be written that consumes generic types that implement `embedded-hal` traits in order to provide
-a platform agnostic version of a driver. Luckily for us this has already been done in the
-[`lsm303agr`] crate. Hence reading the actual accelerometer and magnetometer values will now
-be basically a plug and play experience (plus reading a bit of documentation). In fact the `crates.io`
-page already provides us with everything we need to know in order to read accelerometer data but using a Raspberry Pi. We'll
-just have to adapt it to our chip:
+embedded Rust がサポートするすべてのプラットフォーム向けに、私たちの LSM303AGR 用ドライバを実装するのは無意味です（そして、今後登場するかもしれない新しいものについても同様です）。これを避けるために、`embedded-hal` のトレイトを実装したジェネリック型を受け取るドライバを書くことで、プラットフォームに依存しないバージョンのドライバを提供できます。幸いなことに、これはすでに [`lsm303agr`] クレートで行われています。そのため、実際の加速度計と磁力計の値の読み取りは、基本的にはプラグアンドプレイになります（加えて、少しドキュメントを読むだけです）。実際、`crates.io` のページには、Raspberry Pi を使って加速度計データを読み取るために必要なことがすべてすでに書かれています。あとはそれを私たちのチップ向けに合わせるだけです。
 
 [`lsm303agr`]: https://crates.io/crates/lsm303agr
 
-Take a look at the linked page for the Raspberry Pi Linux sample code.
+リンク先のページにある Raspberry Pi Linux のサンプルコードを見てください。
 
-Because we already know how to create an instance of an object that implements the
-[`embedded_hal::blocking::i2c`] traits from the [previous page](read-a-single-register.md), adapting
-the sample code is straightforward (`examples/show-accel.rs`):
+すでに [前のページ](read-a-single-register.md) で [`embedded_hal::blocking::i2c`] トレイトを実装するオブジェクトのインスタンスを作成する方法はわかっているので、サンプルコードを適応させるのは簡単です（`examples/show-accel.rs`）:
 
 [`embedded_hal::blocking::i2c`]: https://docs.rs/embedded-hal/0.2.6/embedded_hal/blocking/i2c/index.html
 
@@ -29,10 +16,9 @@ the sample code is straightforward (`examples/show-accel.rs`):
 {{#include examples/show-accel.rs}}
 ```
 
-Just like the last snippet you should just be able to try this out like this:
+前のスニペットと同じように、次のようにして試せるはずです。
 ```console
 $ cargo embed --example show-accel
 ```
 
-Furthermore if you (physically) move around your micro:bit a little you should see the
-acceleration numbers that are being printed change.
+さらに、micro:bit を少し（物理的に）動かすと、表示されている加速度の値が変化するのがわかるはずです。

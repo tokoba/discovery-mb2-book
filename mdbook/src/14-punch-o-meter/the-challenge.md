@@ -1,27 +1,27 @@
-# The challenge
+# 課題
 
-To keep the software simple, we will assume that you punch with the board parallel to the ground. To
-measure the magnitude of your punch, you'd need to take into account both X and Y acceleration
-(while ignoring Z since it just reflects gravity). To make things even easier, we will assume that
-you hold the board with the B button close to you and the A button farther away, then punch away
-from yourself. This means that you are punching in the positive X direction.
+ソフトウェアをシンプルに保つため、ボードは地面と平行な状態でパンチすると仮定します。パンチの大きさを
+測定するには、X 軸と Y 軸の加速度の両方を考慮する必要があります
+（Z 軸は単に重力を反映しているだけなので無視します）。さらに簡単にするため、B ボタンが自分に近く、
+A ボタンが自分から遠くなるようにボードを持ち、そのまま自分から遠ざける方向にパンチすると仮定します。
+これは、正の X 方向にパンチすることを意味します。
 
 <p align="center">
-<img class="white_bg" title="Punch Direction" src="../assets/mb2-punch-axis.svg" width="500" />
+<img class="white_bg" title="パンチの方向" src="../assets/mb2-punch-axis.svg" width="500" />
 </p>
 
-Here's what the punch-o-meter must do:
+`punch-o-meter` は次のように動作しなければなりません。
 
-- By default, the app is not "observing" the acceleration of the board.
-- When a significant X acceleration is detected (i.e. the acceleration goes above some threshold),
-  the app should start a new measurement.
-- During that measurement interval, the app should keep track of the maximum acceleration observed
-- After the measurement interval ends, the app must report the maximum acceleration observed. You
-  can report the value using the `rprintln!` macro.
+- デフォルトでは、アプリはボードの加速度を「観測」していません。
+- 大きな X 軸加速度が検出されたとき（つまり、加速度があるしきい値を超えたとき）、
+  アプリは新しい測定を開始しなければなりません。
+- その測定区間のあいだ、アプリは観測された最大加速度を追跡し続ける必要があります
+- 測定区間が終了したら、アプリは観測された最大加速度を報告しなければなりません。値の報告には
+  `rprintln!` マクロを使えます。
 
-Give it a try and let me know how hard you can punch `;-)`.
+ぜひ試して、どれくらい強くパンチできるか教えてください `;-)`。
 
-> **NOTE** There is an additional API that should be useful for this task that we haven't
-> discussed yet: the [`set_accel_scale`] one which you need to measure high g values.
+> **注** この課題に役立つ追加の API がもう 1 つありますが、まだ
+> 説明していません。それが、高い g 値を測定するために必要な [`set_accel_scale`] です。
 > 
 > [`set_accel_scale`]: https://docs.rs/lsm303agr/1.1.0/lsm303agr/struct.Lsm303agr.html#method.set_accel_scale

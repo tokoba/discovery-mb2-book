@@ -1,32 +1,23 @@
-# Timers
+# タイマー
 
-One of the big advantages of a "bare-metal" embedded system is that you control everything that
-happens on your machine. This allows you to have really precise control of time: nothing will slow
-you down unless you let it.
+「ベアメタル」の組み込みシステムの大きな利点の 1 つは、自分のマシンで起こるあらゆることを自分で制御できることです。これにより、時間を本当に高精度に制御できます。自分でそうしない限り、何かによって処理が遅くなることはありません。
 
-However, we've seen that if we really want to get time right, we probably need help. Embedded MCUs
-like the nRF52833 all provide this kind of help in the form of "timers". A timer is a peripheral
-that, as its name implies, acts like a little clock that keeps very precise track of time.
+しかし、時間を本当に正確に扱いたいのであれば、おそらく助けが必要になることもこれまでに見てきました。nRF52833 のような組み込み MCU はすべて、「タイマー」という形でこの種の支援を提供しています。タイマーは、その名のとおり、時間を非常に高精度に追跡する小さな時計のように動作するペリフェラルです。
 
-The nRF52833 contains four timers. If you look at the documentation for the chip, you'll find that
-they are pretty complicated to set up and use. Luckily, the HAL provides a wrapper around timers
-that makes common uses easy. The most common use of a timer is to delay for a precise amount of
-time: just what our `wait()` function of the previous sections was trying to do.
+nRF52833 には 4 つのタイマーが搭載されています。チップのドキュメントを見ると、それらのセットアップや使用方法はかなり複雑であることがわかります。幸い、HAL はタイマーをラップしており、一般的な用途を簡単に扱えるようにしてくれます。タイマーの最も一般的な用途は、正確な時間だけ待機することです。これは、前のセクションの `wait()` 関数がまさに実現しようとしていたことです。
 
-Take a look at `examples/timer-blinky.rs`. This code sets up a timer and uses it to delay for 500ms
-(0.5s) between each toggle.
+`examples/timer-blinky.rs` を見てみましょう。このコードはタイマーをセットアップし、各トグルの間に 500ms（0.5 秒）の遅延を入れるために使用しています。
 
 ```rust
 {{#include examples/timer-blinky.rs}}
 ```
 
-Run this code with `cargo run --release --example timer-blinky` and time it with a stopwatch. You'll
-find that it is exactly one second for each on-off cycle.
+このコードを `cargo run --release --example timer-blinky` で実行し、ストップウォッチで時間を測ってみてください。オン・オフの各サイクルがちょうど 1 秒であることがわかるはずです。
 
-Things you might notice:
+気づくかもしれない点:
 
-* We need to use the `embedded_hal::Delay` trait to get the `delay_ms()` method we're using.
+* 使用している `delay_ms()` メソッドを利用するには、`embedded_hal::Delay` トレイトを使う必要があります。
 
-* As before, we dig the peripheral out of the PAC peripherals struct and give it to the HAL.
+* これまでと同様に、PAC のペリフェラル構造体からそのペリフェラルを取り出して HAL に渡します。
 
-Now we have a production-quality blinky. Let's talk a bit about the implications of all this.
+これで、実運用レベルの blinky になりました。では、これが持つ意味について少し話しましょう。

@@ -1,17 +1,17 @@
-# Polling sucks, actually
+# ポーリングは、実のところイマイチです
 
-Oh yeah, turn signals usually blink, right?  How could we extend our program to blink the turn signal LED when a button is pressed.  We know how to blink an LED from our Hello World program; we turn on the LED, wait for some time, and then turn it off.  But how can we do this in our main loop while also checking for button presses?  We could try something like this:
+そういえば、方向指示器は普通点滅しますよね？  ボタンが押されたときに方向指示器の LED を点滅させるには、プログラムをどう拡張すればよいでしょうか。  Hello World プログラムで LED を点滅させる方法はすでに知っています。LED を点灯し、しばらく待ってから消灯します。  しかし、ボタンの押下も確認しながら、これをメインループの中でどう実現すればよいのでしょうか？  たとえば、次のようなことを試せます。
 
 ```rust
     loop {
         if button_a.is_low().unwrap() {
-            // Blink left arrow
+            // 左矢印を点滅
             display.show(&LEFT_ARROW);
             timer.delay_ms(500_u32);
             display.show(&BLANK);
             timer.delay_ms(500_u32);
         } else if button_b.is_low().unwrap() {
-            // Blink right arrow
+            // 右矢印を点滅
             display.show(&RIGHT_ARROW);
             timer.delay_ms(500_u32);
             display.show(&BLANK);
@@ -23,62 +23,62 @@ Oh yeah, turn signals usually blink, right?  How could we extend our program to 
     }
 ```
 
-Can you see the problem?  We're trying to do two things at once here: 
+問題がわかりますか？  ここでは同時に 2 つのことをしようとしています。 
 
-1. Check for button presses
-2. Blink the LED
+1. ボタンの押下を確認する
+2. LED を点滅させる
 
-But the processor can only do one thing at a time.  If we press a button during the blink delay, the processor won't be able to respond until the delay is over and the loop starts again.  As a result, we get a barely-responsive program (try for yourself and see how slow the button is).
+しかし、プロセッサは一度に 1 つのことしかできません。  点滅のための遅延中にボタンを押すと、遅延が終わってループが再開されるまで、プロセッサは応答できません。  その結果、ほとんど応答しないプログラムになってしまいます（実際に試して、ボタンの反応がどれだけ遅いか見てみてください）。
 
-A "smarter" program would know that the processor isn't actually doing anything while the blink delay is running. The program could very well do other things while waiting for the delay to finish — namely, checking for button presses.
+もっと「賢い」プログラムなら、点滅の遅延が動いている間、プロセッサは実際には何もしていないことを理解しています。 遅延が終わるのを待っている間にも、プログラムは別のことを十分に行えます。つまり、ボタンの押下を確認できるのです。
 
-## Superloops
+## スーパーループ
 
-The term *superloop* in embedded systems is used to refer to a main control loop that does a bunch of things in sequence.  It's the natural extension of the simple control flow we've been using so far.  To handle logic that could be perceived as multiple things happening at once, we need to be a bit more clever in how we structure the program so that we can be reasonably responsive to events.
+組み込みシステムにおける *スーパーループ* という用語は、順番にいくつものことを行うメイン制御ループを指します。  これは、これまで使ってきた単純な制御フローを自然に拡張したものです。  一見すると複数のことが同時に起きているように見えるロジックを扱うには、イベントに対して十分に応答できるよう、プログラムの構造をもう少し賢く組み立てる必要があります。
 
-In the case of our turn signal program, where we want to blink the LEDs when a button is pressed, and be quick to stop blinking when the button is released, we can create a "state machine" to represent the various states of the program.  We have three states for the buttons:
+方向指示器のプログラムのように、ボタンが押されている間は LED を点滅させ、ボタンが離されたら素早く点滅を止めたい場合、プログラムのさまざまな状態を表す「状態機械」を作れます。  ボタンについては 3 つの状態があります。
 
-1. No button is pressed
-2. Button A is pressed
-3. Button B is pressed
+1. どのボタンも押されていない
+2. ボタン A が押されている
+3. ボタン B が押されている
 
-We also have three states for the display:
+表示についても 3 つの状態があります。
 
-1. No LEDs are on
-2. We are in the active blink state for the display (the LEDs are on)
-3. We are in the inactive blink state for the display (the LEDs are off and waiting to be turned on once the blinking period is over)
+1. どの LED も点灯していない
+2. 表示がアクティブな点滅状態にある（LED が点灯している）
+3. 表示が非アクティブな点滅状態にある（LED は消灯しており、点滅周期が終わったら再び点灯するのを待っている）
 
-Since we need to ensure responsiveness, we have to combine these different states.  To fully represent all states of our program, we would have the following:
+応答性を確保する必要があるため、これらの異なる状態を組み合わせなければなりません。  プログラムのすべての状態を完全に表すと、次のようになります。
 
-1. No button is pressed
-2. Button A is pressed, and we are in the active blink state (the left arrow is showing on the display)
-3. Button A is pressed, and we are in the inactive blink state (nothing is showing on the display)
-4. Button B is pressed, and we are in the active blink state (the right arrow is showing on the display)
-5. Button B is pressed, and we are in the inactive blink state (nothing is showing on the display)
+1. どのボタンも押されていない
+2. ボタン A が押されており、アクティブな点滅状態にある（左矢印が表示に出ている）
+3. ボタン A が押されており、非アクティブな点滅状態にある（表示には何も出ていない）
+4. ボタン B が押されており、アクティブな点滅状態にある（右矢印が表示に出ている）
+5. ボタン B が押されており、非アクティブな点滅状態にある（表示には何も出ていない）
 
-When either button is first pressed, and we transition from state (1) to either state (2) or (4), we will initialize a timer counter that counts up starting from the moment a button is pressed.  When the timer reaches some threshold amount (like half a second) and the buttons are still pressed, we will then transition to state (3) or (5), respectively, and reinitialize the timer counter.  When the timer again reaches some threshold amount, we will transition back to state (2) or (4), respectively.  If at any time during states (2), (3), (4), or (5) we see that the button is no longer pressed, we transition back to state (1).
+いずれかのボタンが最初に押されて、状態 (1) から状態 (2) または (4) に遷移したとき、ボタンが押された瞬間からカウントアップするタイマーカウンタを初期化します。  タイマーがあるしきい値（たとえば 0.5 秒）に達し、かつボタンがまだ押されたままであれば、それぞれ状態 (3) または (5) に遷移し、タイマーカウンタを再初期化します。  その後、タイマーが再びあるしきい値に達したら、それぞれ状態 (2) または (4) に戻ります。  状態 (2)、(3)、(4)、(5) のいずれかにいる間に、ボタンがもう押されていないことがわかった場合は、状態 (1) に戻ります。
 
-Our main superloop control flow will repeatedly poll the buttons, compare our current timer counter (if we have one) to a threshold, and change states if any of the above conditions are met.
+メインのスーパーループ制御フローでは、ボタンを繰り返しポーリングし、現在のタイマーカウンタ（あれば）をしきい値と比較し、上記の条件のいずれかを満たしたら状態を変更します。
 
-We have implemented this superloop as a demonstration (`examples/blink-held.rs`), but with the state machine simplified only to blink an LED when button A is held.
+このスーパーループはデモとして実装してあります（`examples/blink-held.rs`）。ただし、状態機械は、ボタン A が押されている間だけ LED を点滅させるように単純化しています。
 
 ```rust
 {{#include examples/blink-held.rs}}
 ```
 
-This is still a bit complex. The 10ms loop delay is more
-than adequate to catch button changes.
+これはまだ少し複雑です。10ms のループ遅延でも
+ボタンの変化を捉えるには十分すぎるほどです。
 
-Superloops work and are often used in embedded systems, but the programmer has to be careful to maintain a high degree of responsiveness to events.  Note how our superloop program is different from the previous simple polling example.  Any state transition step in the superloop as written above should take a fairly small amount of time (e.g. we no longer have delays that could block the processor for long periods of time and cause us to miss any events).  It's not always easy to transform a simple polling program into a superloop where all state transitions are quick and relatively non-blocking, and in these cases, we will have the rely on alternative techniques for handling the different events being executed at the same time.
+スーパーループは機能しますし、組み込みシステムでもよく使われますが、プログラマはイベントに対する高い応答性を維持できるよう注意しなければなりません。  このスーパーループのプログラムが、前の単純なポーリングの例とどう違うかに注目してください。  上に示したスーパーループにおける各状態遷移のステップは、かなり短い時間で終わるべきです（たとえば、プロセッサを長時間ブロックしてイベントを見逃す可能性のある遅延は、もはやありません）。  すべての状態遷移が高速で、比較的ブロッキングしないスーパーループへと単純なポーリングプログラムを変換するのは、必ずしも簡単ではありません。そのような場合には、同時に実行されるさまざまなイベントを処理するための別の手法に頼る必要があります。
 
-## Concurrency
+## 並行性
 
-Doing multiple things at once is called *concurrent* programming. Concurrency shows up in many places in programming, but especially in embedded systems.  There's a whole host of techniques for implementing systems that interact with peripherals while maintaining a high degree of responsiveness (e.g. interrupt handling, cooperative multitasking, event queues, etc.).  We'll explore some of these in later chapters.
+複数のことを同時に行うことを *並行* プログラミングと呼びます。 並行性はプログラミングのさまざまな場面に現れますが、特に組み込みシステムでは重要です。  高い応答性を維持しながら周辺機器とやり取りするシステムを実装するための手法は数多くあります（たとえば、割り込み処理、協調的マルチタスク、イベントキューなど）。  これらのいくつかは後の章で見ていきます。
 
-There is a good introduction to concurrency in an embedded context [here] that
-you might read through before proceeding.
+組み込みの文脈における並行性のよい入門が [here] にあるので、
+先に進む前に読んでおくとよいでしょう。
 
 [here]: https://docs.rust-embedded.org/book/concurrency/index.html
 
 
-For now, let's take a deeper look into what's happening when we call `button_a.is_low()` or `display_pins.row1.set_high()`.
+ひとまず、`button_a.is_low()` や `display_pins.row1.set_high()` を呼び出したときに何が起きているのかを、もう少し深く見ていきましょう。

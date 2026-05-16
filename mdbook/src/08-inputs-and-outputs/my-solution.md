@@ -1,6 +1,6 @@
-# My solution
+# 私の解答
 
-Here's my solution (in `src/main.rs`).  Hopefully that was pretty easy.  You'll soon see that simple polling like this is not very practical.
+これが私の解答です（`src/main.rs` 内）。おそらく、とても簡単だったでしょう。すぐに、このような単純なポーリングはあまり実用的ではないことがわかります。
 
 ```rust
 {{#include src/main.rs}}

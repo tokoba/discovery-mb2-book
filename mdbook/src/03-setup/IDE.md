@@ -1,23 +1,23 @@
-# Getting the most out of your IDE
+# IDE を最大限に活用する
 
-All code in this book assumes that you use a simple terminal to build your code,
-run it, and interact with it. It also makes no assumption about your text editor.
+この本のすべてのコードは、シンプルなターミナルを使ってコードをビルドし、
+実行し、操作することを前提としています。また、テキストエディタについても何も前提としていません。
 
-However, you may have your favourite IDEs, providing you auto-complete, type annotation,
-your preferred shortcuts and much more. This section explains how to get the most out
-of your IDE using the code obtained from this book's repo.
+しかし、自動補完、型注釈、
+好みのショートカットなど、さまざまな機能を提供するお気に入りの IDE があるかもしれません。このセクションでは、この本のリポジトリから取得したコードを使って、
+IDE を最大限に活用する方法を説明します。
 
-# IDE configuration
+# IDE の設定
 
-Below, we explain how to configure your IDE to get the most out of this book.
-If your IDE is not listed below, please improve this book by adding a section, so that the next
-reader can get the best experience out of it.
+以下では、この本を最大限に活用できるように IDE を設定する方法を説明します。
+お使いの IDE が以下に載っていない場合は、次の
+読者が最良の体験を得られるよう、この本にセクションを追加して改善してください。
 
-## How to build with IntelliJ
+## IntelliJ でのビルド方法
 
-When editing the IntelliJ build configuration, here are a few non-default values:
-* You should edit the command. When this book tells you to run `cargo embed FLAGS`,
-You'll need to replace the default value `run` by the command `embed FLAGS`,
-* You should enable "Emulate terminal in output console". Otherwise, your program will fail to print text to a terminal
-* You should ensure that the working directory is `microbit/src/N-name`, with `N-name` being the directory of the chapter you
-are reading. You can not run from the `src` directory since it contains no cargo file.
+IntelliJ のビルド設定を編集する際は、デフォルト以外の値として次の点があります。
+* コマンドを編集する必要があります。この本で `cargo embed FLAGS` を実行するよう指示された場合は、
+デフォルト値の `run` をコマンド `embed FLAGS` に置き換える必要があります
+* "Emulate terminal in output console" を有効にする必要があります。そうしないと、プログラムがターミナルにテキストを出力できません
+* 作業ディレクトリが `microbit/src/N-name` になっていることを確認する必要があります。ここで `N-name` は、
+読んでいる章のディレクトリです。`src` ディレクトリには cargo ファイルが含まれていないため、そこから実行することはできません。

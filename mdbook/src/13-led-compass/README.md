@@ -1,58 +1,59 @@
-# LED compass
+# LED コンパス
 
-In this section, we'll implement a compass using the LEDs on the MB2. Like proper compasses,
-our LED compass must point north somehow. It will do that by turning on one of its outer LEDs; the
-LED turned on should point towards north.
+このセクションでは、MB2 の LED を使ってコンパスを実装します。本物のコンパスと同じように、
+この LED コンパスも何らかの方法で北を指さなければなりません。これは外周の LED の 1 つを点灯することで実現します。点灯した
+LED が北の方向を指すようにします。
 
-Magnetic fields have both a *magnitude*, measured in Gauss or Teslas, and a *direction*. The
-magnetometer on the MB2 measures both the magnitude and the direction of an external magnetic
-field, but it reports back the *decomposition* of said field along *its axes*.
+磁場には、ガウスまたはテスラで測定される *大きさ* と、*方向* の両方があります。MB2 上の
+磁力計は外部磁場の大きさと方向の両方を測定しますが、返してくるのは、その磁場を *その軸* に沿って
+*分解* した成分です。
 
-The magnetometer has three axes associated with it. When the board is held flat with the LEDs facing
-upward and the logo facing forward, the X and Y axes span the plane that is the floor. The X axis
-points to the left edge of the board. The Y axis points to the bottom (card connector) edge of the
-board.  The Z axis points "into the floor", so downwards: "upside down" since the chip is mounted on
-the back. This is a "right-handed" coordinate system. It's all a bit confusing, since the reported
-field strengths are components of the magnetic field vector.
+磁力計には、それに対応する 3 つの軸があります。ボードを平らに持ち、LED が上向き、
+ロゴが前を向くようにすると、X 軸と Y 軸は床の平面を張ります。X 軸はボードの左端を
+指します。Y 軸はボードの下端（カードコネクタ側の端）を指します。Z 軸は「床の中」、つまり下向きを
+指します。チップが背面に実装されているため、「上下逆」になっているわけです。これは「右手系」の
+座標系です。報告される磁場強度は磁場ベクトルの成分なので、少しわかりにくいところです。
 
 <p align="center">
-<img class="white_bg" title="MB2 Axes" src="../assets/mb2-axes.svg" width="500" />
+<img class="white_bg" title="MB2 の軸" src="../assets/mb2-axes.svg" width="500" />
 </p>
 
-You should already be able to write a program that continuously prints the magnetometer data on the
-RTT console from the [I2C chapter](../12-i2c/index.md). After you write that program
-(`examples/show-mag.rs`), locate where north is at your current location. Then line up your
-MB2 with that direction and observe how the sensor's X and Y measurements look.
+[I2C の章](../12-i2c/index.md)の内容から、磁力計のデータを RTT コンソールに継続的に表示する
+プログラムは、もう書けるはずです。そのプログラム
+（`examples/show-mag.rs`）を書いたら、今いる場所で北がどちらにあるかを確認してください。次に、
+MB2 をその方向に合わせて、センサーの X と Y の測定値がどのようになるか観察しましょう。
 
-Now rotate the board 90 degrees while keeping it parallel to the ground. What X, Y and Z values do
-you see this time? Then rotate it 90 degrees again. What values do you see?
+次に、ボードを地面と平行に保ったまま 90 度回転させてください。このとき、X、Y、Z の値は
+どう見えますか。その後、さらにもう 90 度回転させてください。どのような値が見えますか。
 
-> **NOTE** Of the two MB2s I have handy at the time of this writing, one of them seems to have a
-> somewhat broken magnetometer: the Z-axis is unusably offset. The manufacturer has a self-test
-> process for detecting this and a calibration process for mitigating this kind of "hard iron"
-> fault, which is usually the result of exposing the MB2 to a strong magnetic field at some
-> point. However, the `lsm303agr` crate currently doesn't support either of these, and it seems like
-> a lot for an introductory guide to embedded systems. If you have only one MB2 and it doesn't seem
-> to be working, you may just want to skip to the [next chapter]. Cheap hardware: whatcha gonna do?
+> **NOTE** これを書いている時点で手元にある 2 台の MB2 のうち、1 台は
+> 磁力計が少し壊れているようです。Z 軸に実用にならないほどのオフセットがあります。メーカーには、
+> これを検出するためのセルフテスト手順と、この種の「ハードアイアン」
+> 障害を軽減するためのキャリブレーション手順があります。これは通常、MB2 がどこかの時点で
+> 強い磁場にさらされた結果です。しかし、`lsm303agr` クレートは現時点ではそのどちらも
+> サポートしておらず、組み込みシステム入門ガイドで扱うには少し荷が重いように思えます。
+> MB2 が 1 台しかなく、それがうまく動いていないようなら、[next chapter] に
+> スキップした方がよいかもしれません。安価なハードウェアですからね。どうしようもありません。
 
 [next chapter]: ../14-punch-o-meter/index.html
 
-The Earth's magnetic north is a fickle thing: it differs from true north in most places on Earth,
-sometimes substantially. It can point down into the ground quite a bit. It changes over time.
-Without allowing for all this, you won't get a very accurate compass even if your MB2 magnetometer
-is perfect (it's not). This US NOAA calculator
-<https://www.ngdc.noaa.gov/geomag/calculators/mobileDeclination.shtml> can be visited on your mobile
-device to get a good estimate of true north as well as magnetic north; you can give this UK BGS
-[calculator] your latitude, longitude and altitude to get both declination and inclination.  At my
-location the "declination" (difference between true and magnetic north) is about 15°; the
-"inclination" is an astonishing 67° down into the ground.
+地球の磁北は気まぐれなものです。地球上のほとんどの場所では真北と異なり、
+ときにはかなり大きくずれます。かなり地面の中へ向いていることもあります。
+また、時間とともに変化します。こうしたことをすべて考慮しなければ、MB2 の磁力計
+が完璧であったとしても（実際にはそうではありません）、あまり正確なコンパスは得られません。
+米国 NOAA のこの計算機
+<https://www.ngdc.noaa.gov/geomag/calculators/mobileDeclination.shtml> はモバイル
+デバイスから利用でき、真北だけでなく磁北についても良い推定値を得られます。英国 BGS の
+[calculator] に緯度、経度、高度を与えると、偏角と伏角の両方を取得できます。私の
+いる場所では、「declination」（真北と磁北の差）は約 15° で、
+「inclination」は驚くべきことに地面の中へ 67° です。
 
 [calculator]: http://www.geomag.bgs.ac.uk/data_service/models_compass/wmm_calc.html
 
-> **NOTE** The LSM303AGR magnetometer is not a particularly accurate device out-of-the box. The
-> manufacturer recommends a fancy calibration procedure for finding adjustments to the magnetometer
-> readings. You can find further information, a sample calibration implementation and some fancier
-> compass graphics in [appendix 3]: since we're doing something fairly basic with the magnetometer
-> we won't worry about it in this chapter.
+> **NOTE** LSM303AGR 磁力計は、箱から出してすぐの状態では特別高精度なデバイスではありません。メーカーは、
+> 磁力計の読み取り値に対する補正値を求めるための凝ったキャリブレーション手順を推奨しています。
+> 詳細情報、キャリブレーション実装のサンプル、およびもう少し凝った
+> コンパスのグラフィックスについては [appendix 3] を参照してください。この章では磁力計で
+> かなり基本的なことしかしないので、ここでは気にしないことにします。
 
 [appendix 3]: ../appendix/3-mag-calibration/index.html

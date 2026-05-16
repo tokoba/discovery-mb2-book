@@ -1,32 +1,31 @@
-## Debouncing
+## デバウンス
 
-As I mentioned in the last section, hardware can be a little… special. This is definitely the case
-for the buttons on the MB2, and really for almost any pushbutton or switch in almost any system. If
-you are seeing several interrupts for a single keypress, it is probably the result of what is known
-as switch "bouncing". This is literally what the name implies: as the electrical contacts of the
-switch come together, they may bounce apart and then recontact several times rather quickly before
-establishing a solid connection. Unfortunately, our microprocessor is *very* fast by mechanical
-standards: each one of these bounces makes a new interrupt.
+前のセクションで述べたように、ハードウェアは少し……特殊なことがあります。これは MB2 の
+ボタンでまさに当てはまり、実際にはほぼあらゆるシステムのほぼあらゆる押しボタンやスイッチでも同様です。1 回のキー押下で複数の割り込みが発生しているなら、その原因はおそらくスイッチの
+「バウンス」として知られている現象です。これは文字どおり名前のとおりの現象です。スイッチの
+電気接点が接触するとき、しっかり接続が確立されるまでの間に、いったん離れて再び接触することを
+短時間のうちに何度か繰り返すことがあります。残念ながら、私たちのマイクロプロセッサは機械的な
+基準では *非常に* 高速です。このバウンスの 1 回 1 回が新しい割り込みを発生させます。
 
-To "debounce" the switch, you need to *not* process button press interrupts for a short time after
-you receive one. 50-100ms is typically a good debounce interval. Debounce timing seems hard: you
-definitely don't want to spin in an interrupt handler, and yet it would be hard to deal with this in
-the main program.
+スイッチを「デバウンス」するには、ボタン押下の割り込みを 1 回受け取ったあと、短時間はそれを
+処理しないようにする必要があります。通常は 50〜100ms が適切なデバウンス間隔です。デバウンスの
+タイミング処理は難しそうです。割り込みハンドラの中でビジーウェイトするのは絶対に避けたいですし、
+かといってメインプログラムでこれを扱うのも簡単ではありません。
 
-The solution comes through another form of hardware concurrency: the `TIMER` peripheral we have used
-a bunch already. You can set the timer when a "good" button interrupt is received, and not respond
-to further interrupts for that button until the timer peripheral has counted enough time off. The
-timers in `nrf-hal` come configured with a 32-bit count value and a "tick rate" of 1 MHz: a million
-ticks per second. For a 100ms debounce, just let the timer count off 100,000 ticks. Anytime the
-button interrupt handler sees that the timer is running, it can just do nothing.
+この解決策は、別の形のハードウェア並行性、つまりこれまでも何度も使ってきた `TIMER`
+ペリフェラルにあります。「有効な」ボタン割り込みを受け取ったときにタイマーを設定し、そのボタンに
+ついてはタイマーペリフェラルが十分な時間を数え終えるまで、それ以降の割り込みには応答しないように
+できます。`nrf-hal` のタイマーは、32 ビットのカウント値と 1 MHz の「ティックレート」
+（1 秒あたり 100 万ティック）で設定されています。100ms のデバウンスなら、タイマーに
+100,000 ティック数えさせるだけです。ボタンの割り込みハンドラは、タイマーが動作中であることを
+確認したら、何もしなければよいのです。
 
-The implementation of all this can be seen in the next example (`examples/count-debounce.rs`). When
-you run the example you should see one count per button press.
+これらすべての実装は次の例（`examples/count-debounce.rs`）で確認できます。この例を実行すると、
+ボタンを 1 回押すごとに 1 回だけカウントされるはずです。
 
 ```rust
 {{#include examples/count-debounce.rs}}
 ```
 
-**NOTE** The buttons on the MB2 are a little fiddly: it's pretty easy to push one down enough to
-feel a "click" but not enough to actually make contact with the switch. I recommend using a
-fingernail to press the button when testing.
+**注** MB2 のボタンは少し扱いにくく、「カチッ」とした感触がある程度まで押しても、実際には
+スイッチが接触していないことがよくあります。テストするときは、爪でボタンを押すことをおすすめします。

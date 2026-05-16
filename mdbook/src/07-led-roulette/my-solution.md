@@ -1,32 +1,28 @@
-# My solution
+# 私の解答
 
-What solution did you come up with?
+どんな解答になりましたか？
 
-Here's mine. It's probably one of the simplest (but of course not most beautiful) ways to generate
-the required matrix:
+これが私のものです。必要なマトリクスを生成する方法の中では、おそらく最も単純なものの 1 つです（もちろん、いちばん美しいものではありませんが）。
 
 ``` rust
 {{#include src/main.rs}}
 ```
 
-One more thing! Check that your solution also works when compiled in "release" mode:
+もう 1 つあります！ あなたの解答が「release」モードでコンパイルした場合にも動作することを確認してください。
 
 ``` console
 $ cargo embed --release
 ```
 
-If you want to debug your "release" mode binary you'll have to use a different GDB command:
+「release」モードのバイナリをデバッグしたい場合は、別の GDB コマンドを使う必要があります。
 
 ``` console
 $ gdb ../../../target/thumbv7em-none-eabihf/release/led-roulette
 ```
 
-The Rust compiler modifies the machine instructions generated in a release build (sometimes by a
-lot) in order to try to make the code faster or smaller. Unfortunately, GDB has a hard time figuring
-out what is going on after this. As a result, debugging release builds with GDB can be difficult.
+Rust コンパイラは、コードをより高速またはより小さくしようとして、release ビルドで生成されるマシン命令を変更します（ときには大幅に）。残念ながら、その後に何が起きているのかを GDB が把握するのは困難です。その結果、GDB を使った release ビルドのデバッグは難しくなることがあります。
 
-Binary size is something we should always keep an eye on! How big is your solution? You can check
-that using the `size` command on the release binary:
+バイナリサイズは、常に注意しておくべきものです！ あなたの解答はどれくらいの大きさでしょうか？ release バイナリに対して `size` コマンドを使うと確認できます。
 
 ``` console
 $ cargo size --release -- -A
@@ -54,13 +50,6 @@ section              size        addr
 Total              283715
 ```
 
-Your numbers may differ somewhat depending on how your code is built: this is OK.
+コードのビルド方法によって、数値はいくらか異なる場合があります。これは問題ありません。
 
-Know how to read this output? The `text` section contains the program instructions. The `rodata`
-section contains read-only data stored with the program instructions. The `data` and `bss` sections
-contain variables statically allocated in RAM (`static` variables).  If you remember the
-specification of the microcontroller on your micro:bit, you should notice that its flash memory is
-less than double the size of this extremely simple binary: can this be right?  As we can see from
-the size statistics most of the binary is actually made up of debugging related sections. However,
-those are not flashed to the microcontroller at any time — after all they aren't relevant for the
-execution.
+この出力の読み方はわかりますか？ `text` セクションにはプログラムの命令が含まれます。`rodata` セクションには、プログラム命令と一緒に格納される読み取り専用データが含まれます。`data` および `bss` セクションには、RAM に静的に割り当てられた変数（`static` 変数）が含まれます。micro:bit 上のマイクロコントローラの仕様を覚えていれば、そのフラッシュメモリがこの非常に単純なバイナリのサイズの 2 倍にも満たないことに気づくはずです。これは本当に正しいのでしょうか？ サイズ統計からわかるとおり、バイナリの大部分は実際にはデバッグ関連のセクションでできています。しかし、それらがマイクロコントローラに書き込まれることはありません。結局のところ、実行には関係ないからです。

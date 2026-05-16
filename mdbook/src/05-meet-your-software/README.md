@@ -1,36 +1,34 @@
-# Meet your software
+# ソフトウェアに触れてみましょう
 
-In this chapter we will learn how to build, run and debug some *very* simple programs. The goal here
-is not to get into the details of MB2 Rust programming (yet), but to just familiarize yourself with
-the mechanics of the process.
+この章では、*非常に*単純なプログラムをいくつかビルド、実行、デバッグする方法を学びます。ここでの目標は、
+MB2 Rust プログラミングの詳細に立ち入ること（まだ）ではなく、そのプロセスの仕組みに慣れることです。
 
-First, a quick note about the conventions used in the rest of this book. We expect you to get
-a copy of the whole book with
+まず、この本の以降の部分で使われる慣例について簡単に説明します。私たちは、次のようにして
+本全体のコピーを取得することを想定しています。
 
 ```
 git clone http://github.com/rust-embedded/discovery-mb2
 ```
 
-The book's "source code" is in `discovery-mb2/mdbook/src`. You should go there in your copy and look
-around a bit. Each chapter directory has both the source Markdown text *and* the complete source for
-all the programs in that chapter. When we refer to some path like `src/main.rs`, we mean that place
-starting from the chapter you are working in. For example, your `discovery-mb2` has a file called
-`mdbook/src/05-meet-your-software/examples/init.rs`. We will refer to that file as just
-`examples/init.rs` in this chapter.
+この本の「ソースコード」は `discovery-mb2/mdbook/src` にあります。あなたのコピーでもそこへ移動して、
+少し見て回ってください。各章のディレクトリには、Markdown の原文テキストと、その章にあるすべてのプログラムの
+完全なソースの両方が含まれています。`src/main.rs` のようなパスを参照する場合、それは作業中の章を起点とした
+場所を意味します。たとえば、あなたの `discovery-mb2` には
+`mdbook/src/05-meet-your-software/examples/init.rs` というファイルがあります。この章では、そのファイルを単に
+`examples/init.rs` として参照します。
 
-There are two basic kinds of Rust code: "binary" executable programs, and "library" code. The
-library code won't play a huge role in this book. Binary program source code can live in one of
-several places:
+Rust コードには基本的に 2 種類あります。「binary」の実行可能プログラムと、「library」コードです。この本では、
+library コードはそれほど大きな役割を果たしません。binary プログラムのソースコードは、いくつかの場所に置けます。
 
-* A program in `src/main.rs` will be automatically compiled and run by `cargo embed` or `cargo
-  run`. No special flags are needed.
+* `src/main.rs` にあるプログラムは、`cargo embed` または `cargo
+  run` によって自動的にコンパイルおよび実行されます。特別なフラグは必要ありません。
 
-* A program in `examples/foo.rs` can be compiled and run by `cargo embed --example foo` or
-  `cargo run --example foo`.
+* `examples/foo.rs` にあるプログラムは、`cargo embed --example foo` または
+  `cargo run --example foo` でコンパイルおよび実行できます。
   
-* A program in `src/bin/bar.rs` can be compiled and run by `cargo embed --bin bar` or
-  `cargo run --bin bar`.
+* `src/bin/bar.rs` にあるプログラムは、`cargo embed --bin bar` または
+  `cargo run --bin bar` でコンパイルおよび実行できます。
 
-This is confusing, but it's a standard convention of Cargo.
+これは紛らわしいですが、Cargo の標準的な慣例です。
 
-Now let's move on and work with all this.
+それでは先に進み、これらすべてを実際に扱っていきましょう。

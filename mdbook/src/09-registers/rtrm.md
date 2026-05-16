@@ -1,64 +1,45 @@
-# RTRM: Reading The Reference Manual
+# RTRM: リファレンスマニュアルを読む
 
-We have previously seen the GPIO pins on the nRF52833. On this chip (and on many others) the GPIO
-pins are grouped into *ports*. There are two ports, Port 0 and Port 1, abbreviated to `P0` and `P1`
-respectively. The pins within each port are named with numbers starting from 0. Port 0 has 32 pins,
-named `P0.00` to `P0.31`, and Port 1 has 10 pins, named `P1.00` to `P1.09`.
+これまでに、nRF52833 の GPIO ピンを見てきました。このチップでは（そして多くのほかのチップでも同様に）、GPIO ピンは *ポート* にグループ化されています。ポートは 2 つあり、それぞれ Port 0 と Port 1 で、略して `P0` と `P1` と呼ばれます。各ポート内のピンには 0 から始まる番号が付けられています。Port 0 には 32 本のピンがあり、`P0.00` から `P0.31` まで、Port 1 には 10 本のピンがあり、`P1.00` から `P1.09` まであります。
 
-The first thing we have to remember out is which pin is connected to which LED.  We previously did
-this by tracing the schematic. That turns out to be hard mode: the required information is in the
-MB2 [pinmap table].
+まず思い出す必要があるのは、どのピンがどの LED に接続されているかです。以前は回路図をたどってこれを調べました。しかし、それは実はハードモードです。必要な情報は MB2 の [pinmap table] にあります。
 
 [pinmap table]: https://tech.microbit.org/hardware/schematic/#v2-pinmap
 
-The table says:
+その表には次のように書かれています。
 
-- `ROW1`, the top LED row, is connected to the pin `P0.21`. `P0.21` is the short form of: Pin 21 on Port 0.
-- `ROW5`, the bottom LED row, is connected to the pin `P0.19`.
+- `ROW1`、つまり最上段の LED 行は、ピン `P0.21` に接続されています。`P0.21` は「Port 0 の Pin 21」の短縮表記です。
+- `ROW5`、つまり最下段の LED 行は、ピン `P0.19` に接続されています。
 
-Up to this point, we know that we want to change the state of the pins `P0.21` and `P0.19` to turn
-the top and bottom rows on and off. These pins are part of Port 0 so we'll use the `P0` peripheral
-to set them up.
+ここまでで、最上段と最下段の行をオン/オフするには、`P0.21` と `P0.19` の状態を変更したいのだと分かりました。これらのピンは Port 0 の一部なので、設定には `P0` ペリフェラルを使います。
 
-Each peripheral has a register *block* associated with it. A register block is a collection of
-registers allocated in contiguous memory. The address at which the register block starts is known as
-its base address. We need to figure out what's the base address of the `P0` peripheral. That
-information is in the following section of the microcontroller [Product Specification]:
+各ペリフェラルには、それに対応するレジスタ *ブロック* があります。レジスタブロックとは、連続したメモリ上に割り当てられたレジスタの集合です。レジスタブロックの開始アドレスは、そのベースアドレスと呼ばれます。`P0` ペリフェラルのベースアドレスが何かを調べる必要があります。その情報は、マイクロコントローラの [Product Specification] の次の節にあります。
 
 > Section 4.2.4 Instantiation - Page 22
 
-The table says that base address of the `P0` register block is `0x5000_0000`.
+その表によると、`P0` レジスタブロックのベースアドレスは `0x5000_0000` です。
 
-Each peripheral also has its own section in the documentation. Each of these sections ends with a
-table of the registers that the peripheral's register block contains. For the `GPIO` family of
-peripheral, that table is in:
+また、各ペリフェラルにはドキュメント内にそれぞれ専用の節があります。これらの節の末尾には、そのペリフェラルのレジスタブロックに含まれるレジスタの表があります。`GPIO` ファミリのペリフェラルについては、その表は次の場所にあります。
 
 > Section 6.8.2 Registers - Page 144
 
-`OUT` is the register which we will be using to set/reset. Its offset value is `0x504` from the base
-address of the `P0`. We can look up `OUT` in the [Product Specification].
+`OUT` は、セット/リセットに使用するレジスタです。`P0` のベースアドレスからのオフセット値は `0x504` です。`OUT` は [Product Specification] で確認できます。
 
-That register is specified right under the `GPIO` registers table:
+そのレジスタの仕様は、`GPIO` レジスタ表のすぐ下にあります。
 
 > Subsection 6.8.2.1 OUT - Page 145
 
-Anyway, `0x5000_0000` + `0x504` = `0x50000504`. That looks familiar! Finally! 
+とにかく、`0x5000_0000` + `0x504` = `0x50000504` です。見覚えがありますね！ ついに！
 
-This is the register we were writing to. The documentation says some interesting things. First, this
-register can both be written to and read from. Next, the register is a 32-bit piece of memory, and
-each bit represents the state of the corresponding pin. That means that bit 19 matches pin 19, for
-instance.  Setting the bit to 1 will enable the pin output, and setting it to 0 will reset
-it. Furthermore, we can see that all pin outputs are disabled by default, as the reset value of all
-bits is 0.
+これが、私たちが書き込みを行っていたレジスタです。ドキュメントにはいくつか興味深いことが書かれています。まず、このレジスタは書き込みも読み出しもできます。次に、このレジスタは 32 ビットのメモリであり、各ビットが対応するピンの状態を表します。つまり、たとえば bit 19 は pin 19 に対応します。そのビットを 1 に設定するとピン出力が有効になり、0 に設定するとリセットされます。さらに、すべてのビットのリセット値が 0 なので、すべてのピン出力はデフォルトで無効になっていることも分かります。
 
-We'll use GDB's `examine` command: `x`. Depending on the configuration of your GDB server,
-GDB will refuse to read memory that isn't specified. You can disable this behaviour by running:
+GDB の `examine` コマンド `x` を使います。GDB サーバーの設定によっては、GDB は指定されていないメモリの読み出しを拒否します。次を実行すると、この挙動を無効にできます。
 
 ```
 set mem inaccessible-by-default off
 ```
 
-So here we go. First turn off the `inaccessible-by-default` flag, then set a couple of breakpoints, reset the device and halt.
+それでは始めましょう。まず `inaccessible-by-default` フラグをオフにしてから、いくつかブレークポイントを設定し、デバイスをリセットして停止します。
 
 ```
 (gdb) set mem inaccessible-by-default off
@@ -76,8 +57,7 @@ Resetting and halting target
 Target halted
 ```
 
-All right. Let's continue until the first breakpoint, right before line 16, and print the contents
-of the register at address `0x50000504`.
+よし。では最初のブレークポイント、つまり 16 行目の直前まで実行を進めて、アドレス `0x50000504` にあるレジスタの内容を表示してみましょう。
 
 ```
 (gdb) c
@@ -89,13 +69,9 @@ Breakpoint 1, registers::__cortex_m_rt_main () at src/07-registers/src/main.rs:1
 0x50000504:     0x00000000
 ```
 
-Ok, we see that the register's value is `0x00000000` or `0` at this point. This corresponds with the
-data in the [Product Specification], which says that `0` is the 'reset value' of this register. That
-means that once the MCU resets, the register will have `0` as its value.
+この時点で、レジスタの値が `0x00000000`、つまり `0` であることが分かります。これは [Product Specification] の記述と一致しており、そこでは `0` がこのレジスタの「リセット値」だとされています。つまり MCU がリセットされると、このレジスタの値は `0` になります。
 
-Let's go on. This line consists of multiple instructions (reading, bitwise ORing and writing), so we
-need to instruct the debugger to continue execution more than once, until we hit the next
-breakpoint.
+先に進みましょう。この行はいくつかの命令（読み出し、ビット単位 OR、書き込み）から成っているので、次のブレークポイントに到達するまで、デバッガに複数回実行を継続させる必要があります。
 
 ```
 (gdb) c
@@ -111,29 +87,23 @@ Breakpoint 2, registers::__cortex_m_rt_main () at src/07-registers/src/main.rs:1
 19              *(PORT_P0_OUT as *mut u32) |= 1 << 19;
 ```
 
-We've stopped right before line 19, meaning that line 16 is fully executed at this point. Let's have
-a look at the `OUT` register's contents again:
+19 行目の直前で停止しました。つまり、この時点で 16 行目は完全に実行されています。もう一度 `OUT` レジスタの内容を見てみましょう。
 
 ```
 (gdb) x 0x50000504
 0x50000504:     0x00200000
 ```
 
-The value of the `OUT` register is `0x00200000` at this point, which is `2097152` in decimal, or
-`2^21`. That means that bit 21 is set to 1, and the rest of the bits are set to 0. That corresponds
-to the code on line 16, which writes `1 << 21`, or a 1 shifted left 21 positions, bitwise ORed with
-`OUT`s current value (which was 0), to the `OUT` register.
+この時点での `OUT` レジスタの値は `0x00200000` で、10 進数では `2097152`、つまり `2^21` です。これは bit 21 が 1 に設定され、それ以外のビットは 0 に設定されていることを意味します。これは 16 行目のコードと対応しており、`1 << 21`、つまり 1 を左に 21 ビットシフトした値を、`OUT` の現在の値（このときは 0）とビット単位 OR したうえで、`OUT` レジスタに書き込んでいます。
 
-Writing `1 << 21` (`OUT[21]= 1`) to `OUT` sets `P0.21` *high*. That turns the top LED row
-*on*. Check that the top row is now indeed lit up.
+`OUT` に `1 << 21`（`OUT[21]= 1`）を書き込むと、`P0.21` は *ハイ* になります。これにより、最上段の LED 行が *オン* になります。実際に最上段が点灯していることを確認してください。
 
 ```
 (gdb) c
 Continuing.
 ```
 
-Yeah, I was gonna say that. Now, hit 'c' another time to continue execution up to the next
-breakpoint and print its value.
+ええ、今それを言おうとしていました。では、もう一度 'c' を押して次のブレークポイントまで実行を進め、その値を表示してみましょう。
 
 ```
 Program received signal SIGINT, Interrupt.
@@ -148,21 +118,13 @@ Breakpoint 3, registers::__cortex_m_rt_main () at src/07-registers/src/main.rs:2
 0x50000504:     0x00280000
 ```
 
-On line 19, we've set bit 19 of `OUT` to 1, keeping bit 21 as is. The result is `0x00280000`, which
-is `2621440` in decimal, or `2^19 + 2^21`, meaning that both bit 19 and bit 21 are set to 1.
+19 行目では、bit 21 をそのままにして `OUT` の bit 19 を 1 に設定しました。その結果が `0x00280000` で、10 進数では `2621440`、つまり `2^19 + 2^21` です。これは bit 19 と bit 21 の両方が 1 に設定されていることを意味します。
 
-Writing `1 << 19` (`OUT[19]= 1`) to `OUT` sets `P0.19` *high*. That turns the bottom LED row
-*on*. As such, the bottom row should now be lit up.
+`OUT` に `1 << 19`（`OUT[19]= 1`）を書き込むと、`P0.19` は *ハイ* になります。これにより、最下段の LED 行が *オン* になります。したがって、この時点で最下段が点灯しているはずです。
 
-The following lines turn the rows off again. First the top row, then the bottom row. This time,
-we're doing a bitwise AND operation, combined with a bitwise NOT. We calculate `!(1 << 21)`, which
-is all bits set to 1, except for bit 21. Next, we bitwise AND that with the current value of `OUT`,
-ensuring that only bit 21 is set to 0, keeping the value of the other bits intact.
+続く行では、これらの行を再びオフにします。まず最上段、次に最下段です。今回は、ビット単位 AND 演算にビット単位 NOT を組み合わせています。`!(1 << 21)` を計算すると、bit 21 以外のすべてのビットが 1 になります。次にそれを `OUT` の現在の値とビット単位 AND することで、ほかのビットの値を保ったまま、bit 21 だけを 0 にします。
 
-Continue execution and check that the reported values of the `OUT` register matches what you
-expect. You can press `CTRL+C` to pause execution once the device enters the endless loop at the end
-of the `main` function.
-
+実行を続けて、報告される `OUT` レジスタの値が期待どおりかどうかを確認してください。`main` 関数の末尾にある無限ループにデバイスが入ったら、`CTRL+C` を押して実行を一時停止できます。
 ```
 (gdb) c
 Continuing.
@@ -193,6 +155,6 @@ Program received signal SIGINT, Interrupt.
 0x50000504:     0x00000000
 ```
 
-And at this points all LEDs should be turned off again!
+そして、この時点ですべてのLEDは再び消灯しているはずです！
 
 [Product Specification]: https://docs-be.nordicsemi.com/bundle/ps_nrf52833/attach/nRF52833_PS_v1.7.pdf

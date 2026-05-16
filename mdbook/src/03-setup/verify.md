@@ -1,18 +1,17 @@
-# Verify the installation
+# インストールを確認する
 
-Let's verify that all the tools were installed correctly.
+すべてのツールが正しくインストールされたことを確認しましょう。
 
-## Verifying cargo-embed
+## cargo-embed の確認
 
-First, connect the micro:bit to your Computer using a USB cable.
+まず、USB ケーブルを使って micro:bit をコンピューターに接続します。
 
-At least an orange LED right next to the USB port of the micro:bit should light up.  Furthermore, if
-you have never flashed another program on to your micro:bit, the default program the micro:bit ships
-with should start blinking the red LEDs on its back: you can ignore them, or you can play with the
-demo app.
+micro:bit の USB ポートのすぐ横にあるオレンジ色の LED が少なくとも点灯するはずです。さらに、これまでに
+micro:bit に別のプログラムを書き込んだことがない場合は、micro:bit に最初から入っているデフォルトのプログラムが
+背面の赤い LED を点滅させ始めるはずです。これらは無視してもかまいませんし、デモアプリで遊んでもかまいません。
 
-Now let's see if probe-rs, and by extensions cargo-embed can see your micro:bit. You can do this by
-running the following command:
+それでは、probe-rs と、ひいては cargo-embed が micro:bit を認識できるか確認しましょう。これには、
+次のコマンドを実行します:
 
 ``` console
 $ probe-rs list
@@ -20,7 +19,7 @@ The following debug probes were found:
 [0]: BBC micro:bit CMSIS-DAP -- 0d28:0204:990636020005282030f57fa14252d446000000006e052820 (CMSIS-DAP)
 ```
 
-Or if you want more information about the micro:bits debug capabilities then you can run:
+また、micro:bit のデバッグ機能についてさらに詳しい情報が必要であれば、次を実行できます:
 
 ``` console
 $ probe-rs info
@@ -52,20 +51,20 @@ Debugging RISC-V targets over SWD is not supported. For these targets, JTAG is t
 Debugging Xtensa targets over SWD is not supported. For these targets, JTAG is the only supported protocol. Xtensa specific information cannot be printed.
 ```
 
-Next, make sure you are in `src/03-setup` of this book's source code. Then run these commands:
+次に、この本のソースコードの `src/03-setup` ディレクトリにいることを確認してください。続いて、次のコマンドを実行します:
 
 ```
 $ rustup target add thumbv7em-none-eabihf
 $ cargo embed --target thumbv7em-none-eabihf
 ```
 
-If everything works correctly cargo-embed should first compile the small example program
-in this directory, then flash it and finally open a nice text based user interface that
-prints Hello World.
+すべてが正しく動作していれば、cargo-embed はまずこのディレクトリ内の小さなサンプルプログラムを
+コンパイルし、その後それを書き込み、最後に Hello World を表示する見やすいテキストベースのユーザーインターフェースを
+開くはずです。
 
-(If it does not, check out [general troubleshooting] instructions.)
+（そうならない場合は、[general troubleshooting] の手順を確認してください。）
 
 [general troubleshooting]: ../appendix/1-general-troubleshooting/index.html
 
-This output is coming from the small Rust program you just flashed on to your micro:bit.
-Everything is working properly and you can continue with the next chapters!
+この出力は、今 micro:bit に書き込んだ小さな Rust プログラムから送られてきています。
+すべて正常に動作しています。次の章へ進んでください！

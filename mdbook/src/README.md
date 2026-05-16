@@ -1,66 +1,66 @@
 # `micro::bit v2 Embedded Discovery Book`
 
-> Discover the world of microcontrollers through [Rust]!
+> [Rust] を通してマイクロコントローラの世界を発見しましょう！
 
 [Rust]: https://www.rust-lang.org/
 
-This book is an introductory course on microcontroller-based embedded systems that uses Rust as the
-teaching language rather than the usual C/C++.
+本書は、通常の C/C++ ではなく Rust を学習言語として用いる、マイクロコントローラベースの
+組み込みシステムに関する入門コースです。
 
-## Scope
+## 扱う内容
 
-The following topics will be covered (eventually, I hope):
+以下のトピックを扱う予定です（いずれ、そうなればと思っています）:
 
-- How to write, build, flash and debug an "embedded" (Rust) program.
+- 「組み込み」(Rust) プログラムの書き方、ビルド、フラッシュ、デバッグの方法。
 
-- Functionality ("peripherals") commonly found in microcontrollers: Digital input and output, Pulse
-  Width Modulation (PWM), Analog to Digital Converters (ADC), common communication protocols like
-  Serial, I2C and SPI, etc.
+- マイクロコントローラで一般的に見られる機能（「ペリフェラル」）: デジタル入力と出力、
+  パルス幅変調 (PWM)、アナログ-デジタルコンバータ (ADC)、シリアル、I2C、SPI などの
+  一般的な通信プロトコル、など。
 
-- Multitasking concepts: cooperative vs preemptive multitasking, interrupts, schedulers, etc.
+- マルチタスクの概念: 協調型 vs プリエンプティブ型マルチタスク、割り込み、スケジューラ、など。
 
-- Control systems concepts: sensors, calibration, digital filters, actuators, open loop control,
-  closed loop control, etc.
+- 制御システムの概念: センサー、キャリブレーション、デジタルフィルタ、アクチュエータ、
+  開ループ制御、閉ループ制御、など。
 
-## Approach
+## 進め方
 
-- Beginner friendly. No previous experience with microcontrollers or embedded systems is required.
+- 初心者向けです。マイクロコントローラや組み込みシステムの事前経験は必要ありません。
 
-- Hands on. Plenty of exercises to put the theory into practice. *You* will be doing most of the
-  work here.
+- ハンズオンです。理論を実践に移すための演習を豊富に用意しています。 *あなた* が行うのは
+  ここでの作業の大部分です。
 
-- Tool centered. We'll make plenty use of tooling to ease development. "Real" debugging, with GDB,
-  and logging will be introduced early on. Using LEDs as a debugging mechanism has no place here.
+- ツール中心です。開発を容易にするツールを積極的に活用します。GDB を使った "本物の"
+  デバッグやロギングも早い段階で導入します。LED をデバッグ手段として使う余地はありません。
 
-## Non-goals
+## 対象外
 
-What's out of scope for this book:
+本書の対象外となるものは次のとおりです:
 
-- Teaching Rust. There's plenty of material on that topic already. We'll focus on microcontrollers
-  and embedded systems.
+- Rust を教えること。その話題については、すでに十分な教材があります。ここではマイクロ
+  コントローラと組み込みシステムに焦点を当てます。
 
-- Being a comprehensive text about electric circuit theory or electronics. We'll just cover the
-  minimum required to understand how some devices work.
+- 電気回路理論や電子工学についての包括的な教科書であること。ここでは、一部のデバイスが
+  どのように動作するかを理解するために必要な最小限の内容だけを扱います。
 
-- Covering details such as linker scripts and the boot process. For example, we'll use existing tools
-  to help get your code onto your board, but not go into detail about how those tools work.
+- リンカスクリプトやブートプロセスのような詳細を扱うこと。たとえば、既存のツールを使って
+  コードをボードに書き込めるようにしますが、それらのツールの仕組みまでは詳しく扱いません。
 
-Also I don't intend to port this material to other development boards; this book will make exclusive
-use of the micro:bit development board.
+また、この教材を他の開発ボード向けに移植するつもりもなく、本書では micro:bit 開発ボード
+のみを使用します。
 
-## Reporting problems
+## 問題の報告
 
-The source of this book is in [this repository]. If you encounter any typo or problem with the code
-report it on the [issue tracker].
+本書のソースは [this repository] にあります。誤字やコードの問題を見つけた場合は、
+[issue tracker] で報告してください。
 
 [this repository]: https://github.com/rust-embedded/discovery-mb2
 [issue tracker]: https://github.com/rust-embedded/discovery-mb2/issues
 
-## Other embedded Rust resources
+## その他の組み込み Rust リソース
 
-This Discovery book is just one of several embedded Rust resources provided by the
-[Embedded Working Group]. The full selection can be found at [The Embedded Rust Bookshelf]. This
-includes the list of [Frequently Asked Questions].
+この Discovery book は、[Embedded Working Group] が提供する複数の組み込み Rust リソース
+の 1 つにすぎません。全体の一覧は [The Embedded Rust Bookshelf] にあります。ここには
+[Frequently Asked Questions] の一覧も含まれています。
 
 [Embedded Working Group]: https://github.com/rust-embedded/wg
 [The Embedded Rust Bookshelf]: https://docs.rust-embedded.org

@@ -1,31 +1,30 @@
-# Flash it
+# フラッシュする
 
-Flashing is the process of moving our program into the microcontroller's persistent memory. Once
-flashed, the microcontroller will execute the flashed program every time it is powered on.
+フラッシュとは、プログラムをマイクロコントローラの不揮発性メモリに書き込むことです。いったん
+フラッシュされると、マイクロコントローラは電源が入るたびに書き込まれたプログラムを実行します。
 
-Our program will be the *only* program in the microcontroller memory.  By this I mean that there's
-nothing else running on the microcontroller: no OS, no "daemon", nothing. Our program has full
-control over the device.
+このプログラムは、マイクロコントローラのメモリ上で動く *唯一の* プログラムになります。つまり、
+マイクロコントローラ上ではほかに何も動いていません。OS も、「デーモン」も、何もありません。
+プログラムがデバイスを完全に制御します。
 
-Flashing the binary itself is quite simple, thanks to `cargo embed`.
+バイナリ自体のフラッシュは、`cargo embed` のおかげでとても簡単です。
 
-Before executing that command though, let's look into what it actually does. If you look at the side
-of your micro:bit with the USB connector facing upwards, you will notice that there are actually
-three black squares on there. The biggest one is a speaker. Another is our MCU we already talked
-about… but what purpose does the remaining one serve? This chip is *another* MCU, an NRF52820 almost
-as powerful as the NRF52833 we will be programming! This chip has three main purposes:
+ただし、そのコマンドを実行する前に、それが実際には何をしているのかを見てみましょう。USB コネクタが
+上を向くように micro:bit の側面を見ると、実はそこに黒い四角が 3 つあることに気付くはずです。
+一番大きいものはスピーカーです。もう 1 つはすでに説明した MCU ですが……では、残る 1 つは
+何のためにあるのでしょうか？ このチップは *別の* MCU で、これからプログラミングする
+NRF52833 に匹敵するほど高性能な NRF52820 です！ このチップには主に 3 つの目的があります。
 
-1. Enable power and reset control of our NRF52833 MCU from the USB connector.
-2. Provide a [serial to USB bridge] for our MCU.
-3. Provide an interface for programming and debugging our NRF52833 (this is the relevant purpose for
-   now).
+1. USB コネクタ経由で NRF52833 MCU の電源制御とリセット制御を可能にする。
+2. MCU 用の [serial to USB bridge] を提供する。
+3. NRF52833 をプログラムし、デバッグするためのインターフェイスを提供する（現時点ではこれが関係する目的です）。
 
-This chip acts as sort of bridge between our computer (to which it is connected via USB) and the MCU
-(to which it is connected via traces and communicates with using the SWD protocol). This bridge
-enables us to flash new binaries on to the MCU, inspect a program's state via a debugger and do
-other useful things.
+このチップは、コンピュータ（USB 経由で接続される）と MCU（配線パターンで接続され、SWD プロトコル
+を使って通信する）の間にある、一種のブリッジとして機能します。このブリッジにより、新しいバイナリを
+MCU にフラッシュしたり、デバッガ経由でプログラムの状態を調べたり、そのほかの便利なことを
+行ったりできます。
 
-So lets flash it!
+それでは、フラッシュしてみましょう！
 
 ```console
 $ cargo embed --example init
@@ -35,11 +34,11 @@ $ cargo embed --example init
     Finished flashing in 0.608s
 ```
 
-You will notice that `cargo-embed` does not exit after outputting the last line. This is intended:
-you should not close `cargo-embed`, since we need it in this state for the next step — debugging it!
-Furthermore, you will have noticed that `cargo build` and `cargo embed` are actually passed the same
-flags. This is because `cargo embed` actually executes the build and then flashes the resulting
-binary on to the chip. This means you can leave out the `cargo build` step in the future if you want
-to flash your code right away.
+`cargo-embed` は最後の行を出力したあとも終了しないことに気付くでしょう。これは意図された動作です。
+次のステップ、つまりデバッグのためにこの状態が必要なので、`cargo-embed` を閉じないでください！
+さらに、`cargo build` と `cargo embed` には実際には同じフラグが渡されていることにも気付いた
+でしょう。これは、`cargo embed` が実際にはビルドを実行し、その結果できたバイナリをチップに
+フラッシュしているからです。つまり、今後すぐにコードをフラッシュしたい場合は、`cargo build` の
+ステップを飛ばせます。
 
 [serial to USB bridge]: ../10-serial-port/index.html

@@ -1,32 +1,30 @@
-# Portability
+# 移植性
 
-(This section is optional. Feel free to skip to the [next section], where we clean our code up a bit
-and call it a day.)
+（このセクションは任意です。[next section] に進んでも構いません。そこではコードを少し整理して、今日はこれで終わりにします。）
 
 [next section]: board-support-crate.html
 
-You may wonder whether all this fancy ecosystem is worth its weight. The setup for our blinky is
-pretty fancy, and uses a lot of Rust crates and features for such a simple job.
+この手の凝ったエコシステムにそれだけの価値があるのか、疑問に思うかもしれません。今回の blinky のセットアップは
+かなり凝っていて、このような単純な仕事のために Rust のクレートや機能をたくさん使っています。
 
-One cool advantage, though, is that our code becomes really portable. On a different board, the
-setup may be different, but the actual blinky loop is identical!
+ただし、優れた利点の 1 つは、コードの移植性が非常に高くなることです。別のボードではセットアップは
+異なるかもしれませんが、実際の blinky ループはまったく同じです！
 
-Let's take a look at a blinky for the Sipeed Longan Nano. This is a little $5 board that, like the
-MB2, is an embedded board with an MCU. Otherwise, it is completely different: different processor
-(the GD32VF103, with a RISC-V instruction set entirely unlike the Arm instruction set we're using),
-different peripherals, different board. But it has an LED attached to a GPIO pin, so we can blinky
-it.
+Sipeed Longan Nano 向けの blinky を見てみましょう。これは 5 ドルほどの小さなボードで、MB2 と同様に、
+MCU を備えた組み込みボードです。そのほかの点では、まったく異なります。プロセッサも異なり
+（GD32VF103 で、私たちが使っている Arm 命令セットとは完全に異なる RISC-V 命令セットを持っています）、
+周辺機器も異なり、ボードも異なります。しかし、GPIO ピンに LED が接続されているので、blinky できます。
 
 ```rust
 {{#include nanoblinky.rs}}
 ```
 
-The differences in setup here are partly because different hardware, and partly because this code
-uses an older HAL crate that hasn't yet been updated for `embedded-hal` 1.0. Yet the main loop is
-identical as advertised, and the rest of the code is pretty recognizable. Because of the portability
-provided by Rust's easy cross-compilation and the embedded Rust ecosystem, blinky is just blinky.
+ここでのセットアップの違いは、一部はハードウェアが異なるためであり、また一部はこのコードが
+まだ `embedded-hal` 1.0 に更新されていない古い HAL クレートを使っているためです。それでも、メインループは
+予告どおり同一で、残りのコードもかなり見覚えのあるものです。Rust の容易なクロスコンパイルと
+組み込み Rust エコシステムがもたらす移植性のおかげで、blinky はどこでも blinky なのです。
 
-You can find a complete working [nanoblinky] example on GitHub, if you want to see all the
-details or even get your own board and try it yourself.
+すべての詳細を見たい場合や、自分のボードを手に入れて実際に試してみたい場合は、GitHub で完全に動作する
+[nanoblinky] の例を見つけることができます。
 
 [nanoblinky]: https://github.com/pdx-cs-rust/nanoblinky

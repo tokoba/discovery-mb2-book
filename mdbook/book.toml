@@ -1,8 +1,8 @@
 [book]
-title = "Rust Embedded MB2 Discovery Book"
-description = "Discover the world of microcontrollers through Rust with the BBC micro:bit v2"
+title = "Rust Embedded MB2 Discovery Book (日本語訳)"
+description = "BBC micro:bit v2 を通してマイクロコントローラの世界を Rust で探求する"
 authors = ["Rust Embedded Resources Team"]
-language = "en"
+language = "ja"
 
 [output.html]
 git-repository-url = "https://github.com/rust-embedded/discovery-mb2/"
@@ -10,8 +10,8 @@ additional-js = ["src/assets/epub-link.js"]
 additional-css = ["src/assets/custom.css"]
 
 [output.epub]
-# Optional settings
-title = "Rust Embedded MB2 Discovery Book"
+optional = false
+title = "Rust Embedded MB2 Discovery Book (日本語訳)"
 author = "Rust Embedded Resources Team"
 
 # [output.html.site]
@@ -19,4 +19,3 @@ author = "Rust Embedded Resources Team"
 # Optional settings
 # base-url = "/discovery-mb2/"
 # git-repository-url = "
-

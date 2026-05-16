@@ -1,48 +1,25 @@
 # I2C
 
-We just saw the UART serial communication format. UART serial is widely used because it is simple
-and has been around almost forever. (Remember how the host device is called a "tty" for "TeleTYpe"?
-Yeah, that.) This ubiquity and simplicity makes it a popular choice for simple communications.
+先ほど、UART シリアル通信の形式を見ました。UART シリアルは、単純で、ほとんど太古の昔から使われているため、広く利用されています。（ホストデバイスが "TeleTYpe" に由来して "tty" と呼ばれることを覚えていますか？ そう、そのことです。）この普及度と単純さにより、簡単な通信の手段として人気があります。
 
-Because of hardware limitations on line length *vs* signal quality and because of difficulty of
-accurate decoding, UART serial typically caps out at about 115200 baud under ideal conditions. A
-UART serial port has both low bandwidth (11.5KB/s) and high latency (87µs/byte).
+配線長 *vs* 信号品質に関するハードウェア上の制約と、正確にデコードすることの難しさのため、UART シリアルは通常、理想的な条件でも約 115200 ボー程度が上限です。UART シリアルポートは、帯域幅が低く（11.5KB/s）、レイテンシが高い（87µs/byte）という特徴があります。
 
-UART serial is point-to-point: there is no way to connect three or more devices to the same wire,
-and each wire requires a dedicated hardware device on each end.
+UART シリアルはポイントツーポイントです。同じ配線に 3 台以上のデバイスを接続する方法はなく、また各配線の両端には専用のハードウェアデバイスが必要です。
 
-The good news (and the bad news) is that there are *plenty* of other hardware-assisted serial
-communication protocols in the embedded space that overcome these limitations. Some of them are
-widely used in digital sensors.
+良い知らせ（であると同時に悪い知らせ）として、組み込みの分野には、これらの制約を克服する、ハードウェア支援のシリアル通信プロトコルが*たくさん*あります。その一部はデジタルセンサーで広く使われています。
 
-The micro:bit board we are using has two motion sensors in it: an accelerometer and a magnetometer.
-Both of these sensors are packaged into a single component and can be accessed via an I2C bus.
+私たちが使っている micro:bit ボードには、2 つのモーションセンサー、つまり加速度計と磁力計が搭載されています。これら 2 つのセンサーは 1 つのコンポーネントにまとめられており、I2C バス経由でアクセスできます。
 
-I2C is pronounced "EYE-SQUARED-CEE" and stands for Inter-Integrated Circuit. I2C is a *synchronous*
-serial *bus* communication protocol: it uses two lines to exchange data: a data line (SDA) and a
-clock line (SCL). The clock line is used to synchronize the communication. Synchronous serial can
-run faster and more reliably than async serial. I2C devices have *bus addresses*: the hardware
-implementation allows sending bytes to a particular device, with other devices connected to the same
-wires ignoring this communication.
+I2C は "EYE-SQUARED-CEE" と発音し、Inter-Integrated Circuit の略です。I2C は*同期式*のシリアル *バス* 通信プロトコルです。データをやり取りするために 2 本の線、データ線（SDA）とクロック線（SCL）を使います。クロック線は通信を同期させるために使われます。同期シリアルは、非同期シリアルよりも高速かつ高信頼で動作できます。I2C デバイスには*バスアドレス*があります。ハードウェア実装により、特定のデバイスに対してバイトを送信でき、同じ配線に接続された他のデバイスはこの通信を無視します。
 
 <a href="https://commons.wikimedia.org/wiki/File:I2C_controller-target.svg">
 <p align="center">
-<img height="360" title="I2C Controller and Targets" src="../assets/I2C_controller-target.svg" />
+<img height="360" title="I2C コントローラとターゲット" src="../assets/I2C_controller-target.svg" />
 </p>
 </a>
 
-I2C uses a *controller*/*target* model: the controller is the device that *starts* and drives the
-communication with a target device. Several devices can be connected to the same bus at the same
-time, and can choose to act either as a controller or as a target. A controller device can
-communicate with a specific target device by first broadcasting the target address to the bus. This
-address can be 7 bits or 10 bits long.  Once a controller has started a communication with a target,
-no device is other than the controller and target is allowed to transmit on the bus until the
-controller ends the communication.
+I2C は *controller*/*target* モデルを使用します。controller は、target デバイスとの通信を*開始*し、主導するデバイスです。複数のデバイスを同じバスに同時に接続でき、それぞれが controller としても target としても振る舞うことを選べます。controller デバイスは、まず target アドレスをバスにブロードキャストすることで、特定の target デバイスと通信できます。このアドレスは 7 ビットまたは 10 ビット長です。controller が target との通信を開始すると、controller がその通信を終了するまで、controller と target 以外のデバイスはバス上で送信することを許されません。
 
-> **NOTE** "Controller/target" was formerly referred to as "master/slave". You may still see that in
-> literature or as labeling on boards. This terminology is now deprecated both in official standards
-> and newer documents, but is used in the Nordic manual for our nRF52833 part and in some embedded
-> Rust documentation.
+> **NOTE** "Controller/target" は以前は "master/slave" と呼ばれていました。文献やボード上のラベルでは、今でもその表記を見かけることがあります。この用語は現在、公式規格でも新しい文書でも非推奨ですが、私たちの nRF52833 部品向けの Nordic マニュアルや、一部の組み込み Rust ドキュメントでは使われています。
 
-The clock line determines how fast data can be exchanged. The MB2 I2C interface can operate at
-speeds of 100, 250 or 400 Kbps. With other devices even faster modes are possible.
+クロック線によって、どれくらいの速さでデータをやり取りできるかが決まります。MB2 I2C インターフェースは 100、250、400 Kbps の速度で動作できます。他のデバイスでは、さらに高速なモードも可能です。

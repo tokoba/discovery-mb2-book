@@ -1,52 +1,41 @@
-# General protocol
+# 一般的なプロトコル
 
-The I2C protocol is more elaborate than the serial communication protocol because it supports
-structured communication between several devices. Let's see how it works:
+I2C プロトコルは、複数のデバイス間の構造化された通信をサポートしているため、シリアル通信プロトコルよりも複雑です。どのように動作するのかを見てみましょう。
 
-## Controller → Target
+## コントローラー → ターゲット
 
-If the Controller wants to send data to the Target:
+コントローラーがターゲットにデータを送信したい場合:
 
-1. Controller: Broadcast START
-2. C: Broadcast target address (7 bits) + the R/W (8th) bit set to WRITE
-3. Target: Responds ACK (ACKnowledgement)
-4. C: Send one byte
-5. T: Responds ACK
-6. Repeat steps 4 and 5 zero or more times
-7. C: Broadcast STOP, or begin a new read transaction
+1. コントローラー: START をブロードキャスト
+2. C: ターゲットアドレス（7 ビット）+ WRITE に設定された R/W（8 番目）ビットをブロードキャスト
+3. ターゲット: ACK（確認応答）を返す
+4. C: 1 バイト送信
+5. T: ACK を返す
+6. 手順 4 と 5 を 0 回以上繰り返す
+7. C: STOP をブロードキャストするか、新しい読み取りトランザクションを開始する
 
-> **NOTE** The target address could have been 10 bits instead of 7 bits long. Nothing else would
-> have changed.
+> **注記** ターゲットアドレスは、7 ビット長ではなく 10 ビット長であってもかまいません。それ以外は何も変わりません。
 
-## Controller ← Target
+## コントローラー ← ターゲット
 
-If the controller wants to read data from the target:
+コントローラーがターゲットからデータを読み取りたい場合:
 
-1. C: Broadcast START
-2. C: Broadcast target address (7 bits) + the R/W (8th) bit set to READ
-3. T: Responds with ACK
-4. T: Send byte
-5. C: Responds with ACK
-6. Repeat steps 4 and 5 zero or more times
-7. C: Broadcast STOP, or begin a new write transaction
+1. C: START をブロードキャスト
+2. C: ターゲットアドレス（7 ビット）+ READ に設定された R/W（8 番目）ビットをブロードキャスト
+3. T: ACK を返す
+4. T: 1 バイト送信
+5. C: ACK を返す
+6. 手順 4 と 5 を 0 回以上繰り返す
+7. C: STOP をブロードキャストするか、新しい書き込みトランザクションを開始する
 
-> **NOTE** The target address could have been 10 bits instead of 7 bits long. Nothing else would
-> have changed.
+> **注記** ターゲットアドレスは、7 ビット長ではなく 10 ビット長であってもかまいません。それ以外は何も変わりません。
 
-## "Device Registers"
+## 「デバイスレジスタ」
 
-Many I2C targets are organized internally as having "device registers", each with an 8-bit address
-and 8-bit contents. Typically, device registers are written with a two-byte write: the first byte is
-the register address and the second the new register value.
+多くの I2C ターゲットは、内部的に「デバイスレジスタ」を持つように構成されており、それぞれが 8 ビットのアドレスと 8 ビットの内容を持ちます。通常、デバイスレジスタは 2 バイトの書き込みで書き込まれます。1 バイト目がレジスタアドレスで、2 バイト目が新しいレジスタ値です。
 
-A so-called "combined" or "split" transaction might consist of a write to the target followed by an
-immediate read back from the target, as shown in the diagram above. Typically, device registers are
-read in this way: the device register address is written and then the current device register value
-is immediately read back.
+いわゆる「combined」または「split」トランザクションは、上の図に示したように、ターゲットへの書き込みの直後にターゲットから読み戻す処理で構成されることがあります。通常、デバイスレジスタはこの方法で読み取られます。つまり、デバイスレジスタアドレスを書き込み、その直後に現在のデバイスレジスタ値を読み戻します。
 
-Some I2C targets can read and write multiple device registers with adjacent addresses through some
-form of "address auto-increment", which permits sending just the first device register address and
-then relying on the device to increment the address for subsequent reads or writes.
+一部の I2C ターゲットでは、何らかの「アドレス自動インクリメント」によって、隣接するアドレスを持つ複数のデバイスレジスタを読み書きできます。これにより、最初のデバイスレジスタアドレスだけを送信し、その後の読み取りまたは書き込みではデバイスがアドレスをインクリメントすることに任せられます。
 
-I2C is a complex protocol, and there are many variations and special features out there. Read the
-manual for your target carefully to see what needs to be done to talk to it.
+I2C は複雑なプロトコルであり、さまざまなバリエーションや特別な機能が存在します。ターゲットと通信するために何をする必要があるかを確認するには、そのターゲットのマニュアルを注意深く読んでください。

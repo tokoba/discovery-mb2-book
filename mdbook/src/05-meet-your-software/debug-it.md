@@ -1,46 +1,47 @@
-# Debug it
+# デバッグしてみよう
 
-Let's figure out how to debug our little program. It doesn't really have any interesting bugs yet,
-but that's the best kind of program to learn debugging on.
+この小さなプログラムをどうデバッグするのか見ていきましょう。まだ特に面白いバグはありませんが、
+デバッグを学ぶにはそういうプログラムが一番です。
 
-## How does this even work?
+## そもそもこれはどう動いているのでしょうか？
 
-Before we debug our program let's take a moment to quickly understand what is actually happening
-here. In the previous chapter we already discussed the purpose of the second chip on the board, as
-well as how it talks to our computer, but how can we actually use it?
+プログラムをデバッグする前に、ここで実際に何が起きているのかを少しだけ素早く理解しておきましょう。
+前の章では、基板上の 2 つ目のチップの役割と、それが私たちのコンピュータとどのように通信するかを
+すでに説明しましたが、では実際にそれをどう使うのでしょうか？
 
-The little option `default.gdb.enabled = true` in `Embed.toml` made `cargo embed` open a so-called
-"GDB stub" after flashing. This is a server that our GDB can connect to and send commands like "set
-a breakpoint at address X". The server can then decide on its own how to handle this command. In the
-case of the `cargo embed` GDB stub it will forward the command via USB to the "debugging probe" on
-the second chip. This chip does the job of talking to the MCU for us.
+`Embed.toml` の小さなオプション `default.gdb.enabled = true` によって、フラッシュ後に
+`cargo embed` がいわゆる「GDB stub」を起動するようになっています。これは、GDB が接続して
+「アドレス X にブレークポイントを設定する」といったコマンドを送れるサーバーです。するとサーバーは、
+そのコマンドをどう処理するかを自分で判断できます。`cargo embed` の GDB stub の場合は、
+そのコマンドを USB 経由で 2 つ目のチップ上の「デバッグプローブ」に転送します。このチップが、
+私たちの代わりに MCU とやり取りする役割を担ってくれます。
 
-## Let's debug!
+## デバッグしてみましょう！
 
-`cargo-embed` is running in our current shell. We can open a new shell and go back into our project
-directory. Once we are there we first have to open the binary in gdb like this:
+現在のシェルでは `cargo-embed` が動作しています。新しいシェルを開いて、プロジェクトディレクトリに
+戻ることができます。そこに移動したら、まず次のようにして gdb でバイナリを開く必要があります。
 
 ```shell
 $ gdb ../../../target/thumbv7em-none-eabihf/debug/examples/init
 ```
 
-> **NOTE** Depending on which GDB you installed you will have to use a different command to launch
-> it. Check out [chapter 3] if you forgot which one it was.
+> **注記** インストールした GDB によっては、起動に別のコマンドを使う必要があります。
+> どのコマンドだったか忘れた場合は [chapter 3] を確認してください。
 
 [chapter 3]: ../03-setup/index.md#tools
 
-The `../../..` in this command is needed, since each example project is in a "workspace" that
-contains the entire book. Workspaces have a single shared `target` directory. Check out [Workspaces
-chapter in Rust Book] for more.
+このコマンドの `../../..` が必要なのは、各サンプルプロジェクトが書籍全体を含む「ワークスペース」の
+中にあるためです。ワークスペースでは、単一の共有 `target` ディレクトリが使われます。詳しくは
+[Workspaces chapter in Rust Book] を参照してください。
 
-> **NOTE** If `cargo-embed` prints a lot of warnings here don't worry about it. As of now it does
-> not fully implement the GDB protocol, and thus might not recognize all the commands your GDB is
-> sending to it. As long as GDB does not crash, you are fine.
+> **注記** ここで `cargo-embed` が大量の警告を表示しても心配しないでください。現時点では
+> GDB プロトコルを完全には実装していないため、GDB が送るすべてのコマンドを認識できないことが
+> あります。GDB がクラッシュしない限り、問題ありません。
 
 [Workspaces chapter in Rust Book]: https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html#creating-a-workspace
 
-Next we will have to connect to the GDB stub. It runs on `localhost:1337` by default so in order to
-connect to it run the following:
+次に、GDB stub に接続する必要があります。デフォルトでは `localhost:1337` で動作しているので、
+接続するには次を実行します。
 
 ```shell
 (gdb) target remote :1337
@@ -49,13 +50,13 @@ Remote debugging using :1337
 157     #[derive(Copy, Clone, Debug)]
 ```
 
-> **NOTE** The example in the repository for this chapter may change over time. Line numbers and
-> other source details may thus be different from what is shown here and below.
+> **注記** この章のリポジトリ内のサンプルは、時間の経過とともに変更される可能性があります。
+> そのため、行番号やその他のソースの詳細は、ここや以下に示されているものと異なる場合があります。
 >
-> If the program fails to halt after starting, and you end up somewhere deeper in the program like
-> the following, then try running `monitor reset halt` to reset. This is due to [a bug](https://github.com/probe-rs/probe-rs/issues/3438)
-> in `probe-rs`, see [issue #27](https://github.com/rust-embedded/discovery-mb2/issues/27) for
-> more details.
+> プログラム開始後に停止せず、次のようにプログラムのより深い場所まで進んでしまう場合は、
+> リセットするために `monitor reset halt` を実行してみてください。これは `probe-rs` の
+> [a bug](https://github.com/probe-rs/probe-rs/issues/3438) によるもので、詳しくは
+> [issue #27](https://github.com/rust-embedded/discovery-mb2/issues/27) を参照してください。
 > ```shell
 > (gdb) target remote :1337
 > Remote debugging using :1337
@@ -66,8 +67,8 @@ Remote debugging using :1337
 > Target halted
 > ```
 
-Next what we want to do is get to the `main` function of our program.  We will do this by first
-setting a breakpoint there and then continuing program execution until we hit the breakpoint:
+次にやりたいのは、プログラムの `main` 関数まで進むことです。これを行うには、まずそこに
+ブレークポイントを設定し、その後そのブレークポイントに到達するまでプログラムの実行を続けます。
 
 ```
 (gdb) break main
@@ -80,29 +81,29 @@ Breakpoint 1, init::__cortex_m_rt_main_trampoline () at src/05-meet-your-softwar
 9       #[entry]
 ```
 
-Breakpoints can be used to stop the normal flow of a program. The `continue` command will let the
-program run freely *until* it reaches a breakpoint. In this case, until it reaches the `main`
-function because there's a breakpoint there.
+ブレークポイントは、プログラムの通常の流れを止めるために使えます。`continue` コマンドを使うと、
+プログラムはブレークポイントに到達する*まで*自由に実行されます。この場合は、そこに
+ブレークポイントがあるため、`main` 関数に到達するまでです。
 
-Note that GDB output says "Breakpoint 1". Remember that our processor can only use a limited amount
-of these breakpoints, so it's a good idea to pay attention to these messages. If you happen to run
-out of breakpoints, you can list all the current ones with `info break` and delete desired ones with
-`delete <breakpoint-num>`.
+GDB の出力に「Breakpoint 1」と表示されていることに注意してください。プロセッサが使える
+ブレークポイントの数には限りがあるので、こうしたメッセージに注意を払うのは良い考えです。
+もしブレークポイントが足りなくなった場合は、`info break` で現在のブレークポイントを一覧表示し、
+`delete <breakpoint-num>` で不要なものを削除できます。
 
-For a nicer debugging experience, we'll be using GDB's Text User Interface (TUI). To enter into that
-mode, on the GDB shell enter the following command:
+より快適にデバッグするために、ここでは GDB の Text User Interface (TUI) を使います。その
+モードに入るには、GDB のシェルで次のコマンドを入力します。
 
 ```
 (gdb) layout src
 ```
 
-> **NOTE** Apologies Windows users. The GDB shipped with the GNU Arm Embedded Toolchain doesn't
-> support this TUI mode `:-(`.
+> **注記** Windows ユーザーの皆さんには申し訳ありません。GNU Arm Embedded Toolchain に
+> 同梱されている GDB は、この TUI モードをサポートしていません `:-(`。
 
-![GDB session](../assets/gdb-layout-src.png "GDB TUI")
+![GDB セッション](../assets/gdb-layout-src.png "GDB TUI")
 
-GDB's break command does works for more than just function names: it can also break at certain line
-numbers.  If we want to break in line 13 we can simply do:
+GDB の break コマンドは、関数名だけに対して機能するわけではありません。特定の行番号でも
+停止できます。13 行目で停止したい場合は、単に次のようにします。
 
 ```
 (gdb) break 13
@@ -114,14 +115,15 @@ Breakpoint 2, init::__cortex_m_rt_main () at src/05-meet-your-software/examples/
 (gdb)
 ```
 
-At any point you can leave the TUI mode using the following command:
+いつでも、次のコマンドで TUI モードを終了できます。
 
 ```
 (gdb) tui disable
 ```
 
-We are now "on" the `_y = x` statement; that statement hasn't been executed yet. This means that `x`
-is initialized but `_y` could contain anything. Let's inspect `x` using the `print` command:
+現在、私たちは `_y = x` 文の「上」にいます。この文はまだ実行されていません。つまり、`x` は
+初期化されていますが、`_y` には何が入っているか分かりません。`print` コマンドを使って `x` を
+調べてみましょう。
 
 ```
 (gdb) print x
@@ -131,26 +133,26 @@ $2 = (*mut i32) 0x20003fe8
 (gdb)
 ```
 
-As expected, `x` contains the value `42`. The command `print &x` prints the address of the variable
-`x`.  The interesting bit here is that GDB output shows the type of the reference: `*mut i32`, a
-pointer to a mutable `i32` value.
+予想どおり、`x` には値 `42` が入っています。`print &x` コマンドは、変数 `x` のアドレスを
+表示します。ここで興味深いのは、GDB の出力に参照の型が表示されていることです。`*mut i32` は、
+可変な `i32` 値へのポインタです。
 
-If we want to continue the program execution line by line, we can do that using the `next` command.
-Let's proceed to the `loop {}` statement:
+プログラムの実行を 1 行ずつ進めたい場合は、`next` コマンドを使います。`loop {}` 文まで
+進んでみましょう。
 
 ```
 (gdb) next
 16          loop {}
 ```
 
-And `_y` should now be initialized.
+これで `_y` も初期化されているはずです。
 
 ```
 (gdb) print _y
 $5 = 42
 ```
 
-Instead of printing the local variables one by one you can also use the `info locals` command:
+ローカル変数を 1 つずつ表示する代わりに、`info locals` コマンドを使うこともできます。
 
 ```
 (gdb) info locals
@@ -159,23 +161,22 @@ _y = 42
 (gdb)
 ```
 
-If we use `next` again on top of the `loop {}` statement, we'll get stuck because the program will
-never pass that statement. Instead, we'll switch to the disassemble view with the `layout asm`
-command and advance one instruction at a time using `stepi`. You can always switch back into Rust
-source code view later by issuing the `layout src` command again.
+`loop {}` 文の上で再び `next` を使うと、プログラムはその文を決して通過しないため、
+そこで詰まってしまいます。そこで代わりに、`layout asm` コマンドで逆アセンブル表示に切り替え、
+`stepi` を使って 1 命令ずつ進めます。あとで再び `layout src` コマンドを実行すれば、
+いつでも Rust のソースコード表示に戻れます。
 
-> **NOTE** If you used the `next` or `continue` command by mistake and GDB got stuck, you can get
-> unstuck by hitting `Ctrl+C`.
+> **注記** うっかり `next` や `continue` コマンドを使って GDB が詰まってしまった場合は、
+> `Ctrl+C` を押せば抜け出せます。
 
 ```
 (gdb) layout asm
 ```
 
-![GDB session](../assets/gdb-layout-asm.png "GDB disassemble")
+![GDB セッション](../assets/gdb-layout-asm.png "GDB の逆アセンブル")
 
-If you are not using the TUI mode, you can use the `disassemble /m` command to disassemble the
-program around the line you are currently at.
-
+TUI モードを使っていない場合は、`disassemble /m` コマンドを使って、現在いる行の周辺を
+逆アセンブルできます。
 ```
 (gdb) disassemble /m
 Dump of assembler code for function _ZN12init18__cortex_m_rt_main17h3e25e3afbec4e196E:
@@ -191,7 +192,7 @@ Dump of assembler code for function _ZN12init18__cortex_m_rt_main17h3e25e3afbec4
    0x00000110 <+6>:     str     r0, [sp, #4]
 
 14
-15          // infinite loop; just so we don't leave this stack frame
+15          // 無限ループ。このスタックフレームから抜けないようにするためだけのもの
 16          loop {}
 => 0x00000112 <+8>:     b.n     0x114 <_ZN12init18__cortex_m_rt_main17h3e25e3afbec4e196E+10>
    0x00000114 <+10>:    b.n     0x114 <_ZN12init18__cortex_m_rt_main17h3e25e3afbec4e196E+10>
@@ -199,10 +200,10 @@ Dump of assembler code for function _ZN12init18__cortex_m_rt_main17h3e25e3afbec4
 End of assembler dump.
 ```
 
-See the fat arrow `=>` on the left side? It shows the instruction the processor will execute next.
+左側の太い矢印 `=>` が見えますか？これは、プロセッサが次に実行する命令を示しています。
 
-If not inside the TUI mode on each `stepi` command GDB will print the statement and the line number
-of the instruction the processor will execute next.
+TUI モードに入っていない場合、`stepi` コマンドを実行するたびに、GDB はプロセッサが次に実行する命令
+に対応する文とその行番号を表示します。
 
 ```
 (gdb) stepi
@@ -211,7 +212,7 @@ of the instruction the processor will execute next.
 16          loop {}
 ```
 
-One last trick before we move to something more interesting. Enter the following commands into GDB:
+もっと興味深いものに進む前に、最後に 1 つ小技を紹介します。次のコマンドを GDB に入力してください。
 
 ```
 (gdb) monitor reset
@@ -223,22 +224,21 @@ Breakpoint 1, init::__cortex_m_rt_main_trampoline () at src/05-meet-your-softwar
 (gdb)
 ```
 
-We are now back at the beginning of `main`!
+これで `main` の先頭に戻りました！
 
-`monitor reset` will reset the microcontroller and stop it right at the program entry point.
-The following `continue` command will let the program run freely until it reaches the `main`
-function that has a breakpoint on it.
+`monitor reset` はマイクロコントローラをリセットし、プログラムのエントリポイントで停止させます。
+続く `continue` コマンドは、ブレークポイントが設定されている `main`
+関数に到達するまで、プログラムをそのまま自由に実行させます。
 
-This combo is handy when you, by mistake, skipped over a part of the program that you were
-interested in inspecting. You can easily roll back the state of your program back to its very
-beginning.
+この組み合わせは、誤って調べたかったプログラムの一部を通り過ぎてしまったときに便利です。
+プログラムの状態を簡単にそのいちばん最初まで巻き戻せます。
 
-> **The fine print**: This `reset` command doesn't clear or touch RAM. That memory will retain its
-> values from the previous run. That shouldn't be a problem though, unless your program behavior
-> depends on the value of *uninitialized* variables — but that's the definition of Undefined
-> Behavior (UB).
+> **細かい注意点**: この `reset` コマンドは RAM をクリアしたり変更したりしません。そのメモリには前回の実行時の
+> 値が残ります。とはいえ、通常それは問題にならないはずです。ただし、プログラムの挙動が
+> *未初期化* 変数の値に依存している場合は別です — ですが、それはまさに未定義
+> 動作 (UB) の定義です。
 
-We are done with this debug session. You can end it with the `quit` command.
+このデバッグセッションはこれで終了です。`quit` コマンドで終えられます。
 
 ```
 (gdb) quit
@@ -252,13 +252,12 @@ Ending remote debugging.
 [Inferior 1 (Remote target) detached]
 ```
 
-> **NOTE** If the default GDB CLI is not to your liking check out [gdb-dashboard]. It uses Python
-> to turn the default GDB CLI into a dashboard that shows registers, the source view, the assembly
-> view and other things.
+> **注記** デフォルトの GDB CLI が好みに合わない場合は、[gdb-dashboard] を試してみてください。これは Python
+> を使って、デフォルトの GDB CLI をレジスタ、ソースビュー、アセンブリ
+> ビューなどを表示するダッシュボードに変えます。
 
 [gdb-dashboard]: https://github.com/cyrus-and/gdb-dashboard#gdb-dashboard
 
-If you want to learn more about what GDB can do, check out the section [How to use
-GDB](../appendix/2-how-to-use-gdb/).
+GDB で何ができるのかをもっと知りたい場合は、セクション [GDB の使い方](../appendix/2-how-to-use-gdb/) を参照してください。
 
-What's next? The high level API I promised.
+次は何でしょう？私が約束した高水準 API です。

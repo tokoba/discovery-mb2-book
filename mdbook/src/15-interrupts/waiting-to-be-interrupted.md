@@ -1,11 +1,11 @@
-# Waiting for an interrupt
+# 割り込みを待つ
 
-You may have wondered why we have been using `asm::wfi()` (wait for instruction) in our main loop instead of something like `asm::nop()`.
+メインループで `asm::nop()` のようなものではなく `asm::wfi()`（割り込み待ち）を使ってきたのはなぜだろう、と疑問に思ったかもしれません。
 
-As discussed before, `asm::nop()` means no-op(eration), and is an instruction that the CPU executes without doing anything .  We definitely could have used `asm::nop()` in our main loop instead, and the program would have behaved the same way.  The microcontroller, on the other hand, would behave differently. 
+前に説明したとおり、`asm::nop()` は no-op(eration) を意味し、CPU が何もせずに実行する命令です。もちろん、メインループで代わりに `asm::nop()` を使うこともでき、その場合でもプログラムの振る舞いは同じです。一方で、マイクロコントローラの振る舞いは異なります。
 
-Calling `asm::wfi()` puts the CPU into "Wait For Interrupt" (WFI) mode.  When the CPU is in WFI mode, it will sleep until an interrupt wakes it up.  During sleep, the CPU will stop fetching instructions, turn off some clocks and peripherals, and enter a low-power state, but still keep the core running.  When an interrupt occurs, the CPU will wake up and execute as normal.
+`asm::wfi()` を呼び出すと、CPU は "Wait For Interrupt"（WFI）モードに入ります。CPU が WFI モードの間は、割り込みによって起こされるまでスリープします。スリープ中は、CPU は命令のフェッチを停止し、一部のクロックやペリフェラルをオフにして低消費電力状態に入りますが、コア自体は動作を維持します。割り込みが発生すると、CPU は復帰して通常どおり実行を続けます。
 
-The main difference between `asm::wfi()` and `asm::nop()` is that the NOP instruction completes immediately, and will thus be run repeatedly in a loop.  The NOP still needs to be fetched from the program memory and be executed even though the execution doesn't do anything.  Most microcontrollers you'll find out there have a low-power mode (some even have several, each with varying things staying on and each with different power consumption characteristics) that can (and should in a lot of cases) be used to save power. The WFI instruction halts execution *in a low-power mode* until an interrupt is received.
+`asm::wfi()` と `asm::nop()` の主な違いは、NOP 命令は即座に完了するため、ループ内で繰り返し実行されることです。NOP は、その実行自体は何もしなくても、プログラムメモリからフェッチされて実行される必要があります。世の中のほとんどのマイクロコントローラには低消費電力モードがあり（中には複数備えているものもあり、何を有効のままにするかや消費電力特性がそれぞれ異なります）、それを電力節約のために利用できますし、多くの場合そうすべきです。WFI 命令は、割り込みを受信するまで *低消費電力モードで* 実行を停止します。
 
-You'll find some interrupt-driven programs that consist of nothing but `asm::wfi()` in the main loop, with all program logic being implemented in the interrupt handlers.
+メインループが `asm::wfi()` だけで構成され、プログラムのロジックのすべてが割り込みハンドラに実装されているような、割り込み駆動のプログラムもあります。

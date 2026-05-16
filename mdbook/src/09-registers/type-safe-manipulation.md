@@ -1,69 +1,46 @@
-# Type safe manipulation
+# 型安全な操作
 
-One of the registers of `P0`, the `IN` register, is documented as a read-only register.
+`P0` のレジスタの 1 つである `IN` レジスタは、読み取り専用レジスタとして文書化されています。
 
-> 6.8.2.4 IN - Pages 145 and 146
+> 6.8.2.4 IN - 145 ページと 146 ページ
 
-Note that in the 'Access' column of the table, only the 'R' is given for this register.  We are not
-supposed to write to this register or Bad Stuff May Happen.
+表の 'Access' 列では、このレジスタには 'R' しか示されていないことに注意してください。 このレジスタに書き込むべきではなく、さもないとまずいことが起こるかもしれません。
 
-Registers have different read/write permissions. Some of them are write only, others can be read and
-written to and there must be others that are read only.
+レジスタには異なる読み取り / 書き込み権限があります。書き込み専用のものもあれば、読み書きできるものもあり、当然、読み取り専用のものもあります。
 
-Directly working with hexadecimal addresses is also error-prone. You already saw that trying to
-access an invalid memory address caused an exception which disrupted the execution of our program.
+16 進アドレスを直接扱うのもエラーの元です。すでに見たように、無効なメモリアドレスにアクセスしようとすると例外が発生し、プログラムの実行が妨げられました。
 
-Wouldn't it be nice if we had an API to manipulate registers in a "safe" manner? Ideally, the API
-should encode these three points I've mentioned: No messing around with the actual addresses, should
-respect read/write permissions and should prevent modification of the reserved parts of a register.
+レジスタを「安全」に操作できる API があったらよいと思いませんか？ 理想的には、その API は私が挙げた次の 3 点を表現しているべきです。実際のアドレスを直接いじらないこと、読み取り / 書き込み権限を尊重すること、そしてレジスタの予約済み部分の変更を防ぐことです。
 
-Well, we do! `registers::init()` actually returns a value that provides a type safe API to
-manipulate the registers of the `P0` and `P1` ports.
+実は、あります！ `registers::init()` は実際に、`P0` および `P1` ポートのレジスタを型安全に操作する API を提供する値を返します。
 
-As you may remember: a group of registers associated to a peripheral is called register block, and
-it's located in a contiguous region of memory. In this type safe API each register block is modeled
-as a `struct` where each of its fields represents a register. Each register field is a different
-newtype over e.g. `u32` that exposes a combination of the following methods: `read`, `write` or
-`modify` according to its read/write permissions. Finally, these methods don't take primitive values
-like `u32`, instead they take yet another newtype that can be constructed using the builder pattern
-and that prevent the modification of the reserved parts of the register.
+覚えているかもしれませんが、あるペリフェラルに関連付けられたレジスタのグループはレジスタブロックと呼ばれ、連続したメモリ領域に配置されます。この型安全 API では、各レジスタブロックは `struct` としてモデル化され、その各フィールドが 1 つのレジスタを表します。各レジスタフィールドは、たとえば `u32` に対する別々の newtype であり、読み取り / 書き込み権限に応じて `read`、`write`、`modify` の組み合わせのメソッドを公開します。最後に、これらのメソッドは `u32` のようなプリミティブ値を受け取るのではなく、ビルダーパターンを使って構築でき、レジスタの予約済み部分の変更を防ぐさらに別の newtype を受け取ります。
 
-The best way to get familiar with this API is to port our running example to it
-(`examples/type-safe.rs`).
+この API に慣れる最良の方法は、実行中のサンプルをこれに移植することです
+(`examples/type-safe.rs`)。
 
 ```rust
 {{#include examples/type-safe.rs}}
 ```
 
-First thing you notice: There are no magic addresses involved. Instead we use a more human friendly
-way, `p0.out`, to refer to the `OUT` register in the `P0` port register block.
+最初に気づくのは、マジックアドレスが一切出てこないことです。代わりに、`P0` ポートのレジスタブロック内の `OUT` レジスタを参照するために、`p0.out` という、より人にとってわかりやすい方法を使います。
 
-The register block has a [`modify`] method that takes a closure. Before this closure is called, the
-`OUT` register's value is read and passed to the closure as the `r` parameter. Given the value of
-`r`, you can manipulate `w` to the desired new value of the register using its methods. The result
-is written to the register once the closure returns. In our case, the current value of the register
-is also passed in the `w` parameter, allowing us to just manipulate `w` when we want to keep the
-rest of the register bits as is.
+このレジスタブロックにはクロージャを受け取る [`modify`] メソッドがあります。このクロージャが呼び出される前に、`OUT` レジスタの値が読み取られ、その値が `r` パラメータとしてクロージャに渡されます。`r` の値をもとに、そのメソッドを使って `w` をレジスタの望ましい新しい値へ操作できます。クロージャが返ると、その結果がレジスタに書き込まれます。今回のケースでは、レジスタの現在の値も `w` パラメータに渡されるため、レジスタの残りのビットをそのままにしておきたい場合は、`w` だけを操作すれば済みます。
 
-The `modify` method is defined for registers that allow both write and read access. If you'd like to
-just read a register's value, but not update it, you can use the [`read`] method. Or, if you simply
-want to write a register value without reading, there's the [`write`] method.
+`modify` メソッドは、書き込みと読み取りの両方を許可するレジスタに対して定義されています。レジスタの値を読み取るだけで更新したくない場合は、[`read`] メソッドを使えます。あるいは、読み取らずに単にレジスタ値を書き込みたい場合は、[`write`] メソッドがあります。
 
-Read-only registers only expose `read`, and write-only registers only expose `write`. This prevents
-users from accessing a register in a way that's not allowed, and therefore you don't need to wrap
-the calls in an `unsafe` block. And you don't need to figure out the exact register address and bit
-positions yourself!
+読み取り専用レジスタは `read` だけを公開し、書き込み専用レジスタは `write` だけを公開します。これにより、許可されていない方法でユーザーがレジスタへアクセスすることを防げるため、呼び出しを `unsafe` ブロックで囲む必要はありません。また、正確なレジスタアドレスやビット位置を自分で突き止める必要もありません！
 
 [`write`]: https://docs.rs/svd2rust/latest/svd2rust/#write
 [`read`]: https://docs.rs/svd2rust/latest/svd2rust/#read
 [`modify`]: https://docs.rs/svd2rust/latest/svd2rust/#modify
 
-Let's run this program! There's some interesting stuff we can do *while* debugging the program.
+このプログラムを実行してみましょう！ プログラムをデバッグしている *間* にできる、興味深いことがいくつかあります。
 
-`p0` is a reference to the `P0` port's register block. `print p0` will return the base address of
-the register block, and `print *p0` will print its value.
+`p0` は `P0` ポートのレジスタブロックへの参照です。`print p0` は
+レジスタブロックのベースアドレスを返し、`print *p0` はその値を表示します。
 
-```
+```sh
 $ cargo run
 (..)
 Target halted
@@ -92,7 +69,7 @@ Continuing.
 
 Breakpoint 4.2, registers::__cortex_m_rt_main () at src/07-registers/src/main.rs:12
 12	    p0.out.modify(|_, w| w.pin21().set_bit());
-(gdb) print *p0                                               ; ⬅️ Printing `*p0` here!
+(gdb) print *p0                                               ; ⬅️ ここで `*p0` を表示します！
 $1 = nrf52833_pac::p0::RegisterBlock {
   _reserved0: [0 <repeats 1284 times>],
   out: nrf52833_pac::generic::Reg<nrf52833_pac::p0::out::OUT_SPEC> {
@@ -325,22 +302,19 @@ $1 = nrf52833_pac::p0::RegisterBlock {
       _marker: core::marker::PhantomData<nrf52833_pac::p0::pin_cnf::PIN_CNF_SPEC>
     }]
 }
-
-
 ```
 
-All these newtypes and closures sound like they'd generate large, bloated programs. If you actually
-compile the program in release mode with [LTO] enabled, though, you'll see exactly the same
-instructions that the "unsafe" version that used `write_volatile` and hexadecimal addresses had!
+こうした newtype やクロージャは、巨大で肥大化したプログラムを生成しそうに聞こえるかもしれません。しかし実際には、[LTO] を有効にしてプログラムをリリースモードでコンパイルすると、`write_volatile` と16進数アドレスを使っていた「unsafe」版とまったく同じ命令が生成されていることがわかります。
 
 [LTO]: https://en.wikipedia.org/wiki/Interprocedural_optimization
 
-Use `cargo objdump` to grab the assembler code to `release.type-safe.dump`:
+`cargo objdump` を使ってアセンブリコードを `release.type-safe.dump` に出力します:
+
 ``` console
 cargo objdump -q --release --example type-safe -- --disassemble --no-show-raw-insn  > release.type-safe.dump
 ```
 
-Then search for `main` in `release.type-safe.dump`
+次に、`release.type-safe.dump` の中で `main` を検索します
 ```
 00000158 <main>:
      158:      	push	{r7, lr}
@@ -368,14 +342,8 @@ Then search for `main` in `release.type-safe.dump`
      190:      	b	0x190 <registers::__cortex_m_rt_main::h0e9b57c6799332fd+0x30> @ imm = #-0x4
 ```
 
-You can validate that this yields the exact same binary as the one with the calls to
-`ptr::read_volatile` and `ptr::write_volatile`.
+これによって、`ptr::read_volatile` と `ptr::write_volatile` の呼び出しを使ったものとまったく同じバイナリが生成されることを確認できます。
 
-The best part of all this is that nobody had to write a single line of code to implement the GPIO
-API. All the code was automatically generated from a System View Description (SVD) file using the
-[svd2rust] tool. This SVD file is actually an XML file that microcontroller vendors provide and that
-contains the register maps of their microcontrollers. The file contains the layout of register
-blocks, the base addresses, the read/write permissions of each register, the layout of the
-registers, whether a register has reserved bits and lots of other useful information.
+この話のいちばん素晴らしい点は、GPIO API を実装するためのコードを誰一人として1行も書く必要がなかったことです。すべてのコードは、[svd2rust] ツールを使って System View Description (SVD) ファイルから自動生成されました。この SVD ファイルは実際にはマイクロコントローラのベンダーが提供する XML ファイルで、各マイクロコントローラのレジスタマップが含まれています。このファイルには、レジスタブロックのレイアウト、ベースアドレス、各レジスタの読み取り/書き込み権限、レジスタのレイアウト、レジスタに予約済みビットがあるかどうか、その他多くの有用な情報が含まれています。
 
 [svd2rust]: https://crates.io/crates/svd2rust

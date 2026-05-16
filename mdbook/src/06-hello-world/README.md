@@ -1,57 +1,53 @@
 # Hello World
 
-In the last section, you wrote a sort of "Hello World" program. But for embedded programmers, the
-"real Hello World" is to blink an LED — any LED — on and off once per second. A program that does
-this is commonly known as a "blinky".
+前のセクションでは、一種の「Hello World」プログラムを書きました。しかし、組み込みプログラマにとっての
+「本当の Hello World」は、LED を 1 秒ごとに点滅させることです — どの LED でもかまいません。これを行う
+プログラムは、一般に「blinky」として知られています。
 
-Why blinky? Because this shows that you have enough control of the board you're working with to
-perform this simple task. You can get a program loaded onto the machine and running, you can find
-and turn on the appropriate pin on the MCU, you can delay for a fixed amount of time. Once you have
-this much control, other tasks become much more straightforward.
+なぜ blinky なのでしょうか？ それは、この単純なタスクを実行できる程度には、作業対象のボードを十分に
+制御できていることを示すからです。マシンにプログラムをロードして実行できること、MCU 上の適切なピンを
+見つけてオンにできること、一定時間の遅延を入れられること。ここまで制御できれば、ほかのタスクはずっと
+取り組みやすくなります。
 
-In previous chapters, you found out several ways to load a program onto your MB2. Now it's just a
-question of which pin you turn on and off, and how you delay between these actions.
+前の章では、プログラムを MB2 にロードする方法をいくつか見つけました。あとは、どのピンをオン/オフするか、
+そしてそれらの操作の間にどう遅延を入れるかという問題です。
 
-Let's start by finding out how to work with the needed pins. There's a path you can follow for this
-if you know how to read electronic circuit "schematic" diagrams. You can find the [MB2 schematic],
-find an LED on that schematic that you want to turn on and off, and find what GPIO pins on the
-nRF52833 are attached to that LED. (The MB2 is a bit unusual in this regard: usually an LED is
-attached to just one pin that turns it on or off. The LED "display" on the MB2 is hooked up in a
-more complicated way to allow turning on and off combinations of LEDs at once: a feature that we
-will be using shortly.)
+まずは、必要なピンの扱い方を調べるところから始めましょう。電子回路の「schematic」図の読み方がわかるなら、
+このためにたどれる道筋があります。[MB2 schematic] を見つけ、その回路図上でオン/オフしたい LED を見つけ、
+その LED に接続されている nRF52833 上の GPIO ピンがどれかを調べられます。（この点で MB2 は少し特殊です。
+通常、LED はオン/オフを切り替える 1 本のピンにだけ接続されています。MB2 の LED「ディスプレイ」は、
+LED の組み合わせを一度にオン/オフできるよう、より複雑な方法で接続されています。これは、このあとすぐに
+使う機能です。）
 
 [MB2 schematic]: https://github.com/microbit-foundation/microbit-v2-hardware/blob/main/V2.21/MicroBit_V2.2.1_nRF52820%20schematic.PDF
 
-We will work with the LED in the upper-left corner of the MB2 display. Tracing the `ROW1` and `COL1`
-wires this LED is connected to, we can see that they go to pins on the nRF52833 labeled
-`AC17`/`P0.21` and `B11`/`AIN4`/`P0.28`. Digging further through the documentation we find that
-`AC17` and `B11` are the row and column indices of the physical pins (solder balls, really) on the
-bottom of the chip — useless to us. `AIN4` just means that this pin can act as an "Analog Input",
-which is also currently useless to us. (It will come into play later.)
+MB2 ディスプレイの左上隅にある LED を扱います。この LED が接続されている `ROW1` と `COL1`
+の配線をたどると、それらが nRF52833 上の `AC17`/`P0.21` および `B11`/`AIN4`/`P0.28` とラベル付けされた
+ピンにつながっていることがわかります。さらにドキュメントを調べると、`AC17` と `B11` はチップの
+底面にある物理ピン（実際にははんだボールです）の行と列のインデックスだとわかります — これは私たちには
+役に立ちません。`AIN4` は、このピンが「アナログ入力」として動作できることを意味するだけで、これも今の
+ところ私たちには役に立ちません。（これはあとで関係してきます。）
 
-This leaves `P0.21` and `P0.28`. These labels correspond to bits in the memory of the nRF52833 that
-can be turned on and off to get the LED to light up. Because electronics reasons, if pin `P0.21` is
-turned on (thus outputting 3.3V) and pin `P0.28` is turned off (thus accepting voltage) the LED will
-light up.
+残るのは `P0.21` と `P0.28` です。これらのラベルは、LED を点灯させるためにオン/オフできる nRF52833 の
+メモリ内のビットに対応しています。電気的な理由により、ピン `P0.21` をオンにして（つまり 3.3V を出力し）、
+ピン `P0.28` をオフにして（つまり電圧を受ける状態にすると）、LED が点灯します。
 
-But what do we do in software to cause this to occur? We will work at the level of the
-`nrf52833-hal` crate. The Hardware Abstraction Layer (HAL) is a chunk of software designed to make a
-particular microcontroller easier to work with. As can be seen from the name, we have one for the
-microcontroller on the MB2. It happens to contain everything needed to turn our target LED on.
+では、これを起こすにはソフトウェアで何をすればよいのでしょうか？ ここでは `nrf52833-hal` crate のレベルで
+作業します。Hardware Abstraction Layer（HAL）は、特定のマイクロコントローラーを扱いやすくするために
+設計されたソフトウェアのまとまりです。名前からわかるとおり、MB2 上のマイクロコントローラー用のものが
+あります。そして都合のよいことに、目的の LED を点灯させるのに必要なものがすべて含まれています。
 
-Take a look at `examples/light-up.rs` in this chapter's directory, and then try running it.
-You could use something fancy like before, but we have it set up so that
+この章のディレクトリにある `examples/light-up.rs` を見てから、実際に実行してみてください。
+前と同じように凝った方法を使ってもよいですが、次のようにして実行できるよう設定してあります。
 
 ```
 cargo run --example light-up
 ```
 
-will load and run your program. That one LED should now be brightly lit!
+とすると、プログラムがロードされて実行されます。その 1 つの LED が明るく点灯しているはずです！
 
 ``` rust
 {{#include examples/light-up.rs}}
 ```
 
-Note that we access the Peripheral Access Crate (PAC) for this chip through our HAL crate. There's a
-complicated dance needed to get access to our pins. Finally, since we can just initialize the pins
-to the right levels, we don't need to set them. Wiggling the pins is a topic for the next section.
+このチップ用の Peripheral Access Crate（PAC）には、HAL crate を通してアクセスしていることに注意してください。ピンにアクセスするには、少し複雑な手順が必要です。最後に、ピンは正しいレベルで初期化するだけでよいので、あらためて設定する必要はありません。ピンを切り替えて動かす話は、次のセクションのテーマです。

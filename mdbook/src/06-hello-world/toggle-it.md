@@ -1,24 +1,15 @@
-# Toggle it
+# トグルしてみよう
 
-Let's turn the LED on and off repeatedly. That's how you make it blink, right?
+LED を繰り返しオンとオフにしてみましょう。そうやって点滅させるのですよね？
 
-In `examples/fast-blink.rs` you'll find the next iteration of our blinky. I've decided to make it
-blink the next LED over, while leaving the original LED on. That is an easy change.
+`examples/fast-blink.rs` には、私たちの blinky の次のバージョンがあります。元の LED は点灯したままにして、その隣の LED を点滅させることにしました。これは簡単な変更です。
 
 ```rust
 {{#include examples/fast-blink.rs}}
 ```
 
-The `embedded-hal` crate is being used here to provide the Rust traits needed to set and unset the
-LED. This means that this part of the code is portable to any Rust HAL that implements the
-`embedded-hal` traits as ours does.
+ここでは、LED を点灯・消灯するために必要な Rust のトレイトを提供するために `embedded-hal` クレートが使われています。これは、このコードのこの部分が、私たちの HAL と同様に `embedded-hal` トレイトを実装している任意の Rust HAL に移植可能であることを意味します。
 
-But wait: neither LED is blinking! The second one is slightly dimmer than the first one, but they
-are both solidly on… or are they? Out of the box, the MB2 executes 64 *million* instructions per
-second. Let's assume it takes a few dozen instructions under the hood to turn the LED on or
-off. (Maybe possibly that many compiled in debug mode, though way less in release mode. Though the
-pins take a while to change state. I don't know.) Anyhow, that second LED is actually turning on and
-off hundreds of thousands of times — perhaps millions of times — every second. Your eye just can't
-keep up.
+でも待ってください。どちらの LED も点滅していません！ 2 つ目のほうが 1 つ目より少し暗いですが、どちらもしっかり点灯したままです……本当にそうでしょうか？ MB2 は箱から出したそのままの状態で、1 秒あたり 64 *百万* 命令を実行します。内部的には、LED を点灯または消灯するのに数十命令かかると仮定しましょう。（おそらくそれくらいかかるのは debug モードでコンパイルした場合で、release モードならずっと少ないでしょう。とはいえ、ピンが状態を変えるのには少し時間がかかります。よく分かりません。） ともかく、その 2 つ目の LED は実際には 1 秒ごとに数十万回 — おそらくは数百万回 — 点灯と消灯を繰り返しています。人間の目ではとても追いつけません。
 
-We'll need to wait a while between toggles. Turns out waiting is the hardest part.
+トグルの間にしばらく待つ必要があります。実は、待つことがいちばん難しいのです。

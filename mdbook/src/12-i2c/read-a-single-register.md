@@ -1,56 +1,54 @@
-# Read a single register
+# 単一のレジスタを読み取る
 
-Let's put all that theory into practice!
+ここまでの理論を実践してみましょう！
 
-First things first we need to know the target addresses of both the accelerometer and the
-magnetometer inside the chip, these can be found in the LSM303AGR's datasheet on page 39 and are:
+まず最初に、チップ内の加速度計と磁力計の両方の対象アドレスを知る必要があります。これらは
+LSM303AGR のデータシートの 39 ページに記載されており、次のとおりです:
 
-- 0011001 for the accelerometer
-- 0011110 for the magnetometer
+- 加速度計: 0011001
+- 磁力計: 0011110
 
-> **NOTE** Remember that these are only the 7 leading bits of the address, the 8th bit is going to
-> be the bit that determines whether we are performing a read or write.
+> **注記** これらはアドレスの先頭 7 ビットにすぎず、8 ビット目は
+> 読み取りを行うのか書き込みを行うのかを決定するビットになることを忘れないでください。
 
-Next up we'll need a register to read from. Lots of I2C chips out there will provide some sort of
-device identification register for their controllers to read. Considering the thousands (or even
-millions) of I2C chips out there it is highly likely that at some point two chips with the same
-address will end up being built (after all the address is "only" 7 bit wide). With this device ID
-register a driver can make sure that it is indeed talking to a LSM303AGR and not some other chip
-that just happens to have the same address.  As you can read in the LSM303AGR's datasheet
-(specifically on page 46 and 61) this part does provide two registers — `WHO_AM_I_A` at address
-`0x0f` and `WHO_AM_I_M` at address `0x4f` — which contain some bit patterns that are unique to the
-device. (The "A" is for "Accelerometer" and the "M" is for "Magnetometer".)
+次に必要になるのは、読み取り元のレジスタです。多くの I2C チップには、コントローラが読み取るための
+何らかのデバイス識別レジスタが用意されています。世の中には何千、あるいは何百万もの I2C チップが
+存在することを考えると、いつか同じアドレスを持つ 2 つのチップが作られてしまう可能性は非常に高いです
+（アドレス幅は「たった」7 ビットしかないのですから）。このデバイス ID レジスタがあれば、ドライバは
+実際に LSM303AGR と通信しているのであって、たまたま同じアドレスを持つ別のチップではないことを
+確認できます。LSM303AGR のデータシート（具体的には 46 ページと 61 ページ）を読むとわかるとおり、
+このデバイスには 2 つのレジスタ — アドレス `0x0f` の `WHO_AM_I_A` と、アドレス `0x4f` の
+`WHO_AM_I_M` — があり、そこにはこのデバイス固有のビットパターンが入っています。
+（"A" は "Accelerometer"、"M" は "Magnetometer" を表します。）
 
-The only thing missing now is the software part: we need to determine which API of the `microbit` or
-a HAL crate we should use for this. If you read through the [nRF52833 Product Specification]
-you will soon find out that it doesn't actually have an I2C-specific peripheral.
-Instead, it has more general-purpose I2C-compatible peripherals called TWI ("Two-Wire
-Interface"), TWIM ("Two-Wire Interface Master") and TWIS ("Two-Wire Interface Slave").
-We will normally be operating in controller mode and will use the newer TWIM, which
-supports "Easy DMA" — the TWI is provided mostly for backward compatibility with older
-devices.
+ここで欠けているのはソフトウェアの部分だけです。つまり、このために `microbit` または
+HAL クレートのどの API を使うべきかを判断する必要があります。[nRF52833 Product Specification] を
+読むと、これには実際には I2C 専用のペリフェラルがないことがすぐにわかります。代わりに、
+TWI（"Two-Wire Interface"）、TWIM（"Two-Wire Interface Master"）、TWIS（"Two-Wire Interface Slave"）
+と呼ばれる、より汎用的な I2C 互換ペリフェラルがあります。通常はコントローラモードで動作するため、
+より新しい TWIM を使用します。これは "Easy DMA" をサポートしています — TWI は主に古いデバイスとの
+後方互換性のために提供されています。
 
-Now if we put the documentation of the [`twi(m)` module] from the `microbit` crate
-together with all the other information we have gathered so far we'll end up with this
-piece of code to read out and print the two device IDs (`examples/chip-id.rs`):
+ここまでに集めた他の情報と `microbit` クレートの [`twi(m)` module] のドキュメントを
+組み合わせると、2 つのデバイス ID を読み出して表示する次のコード
+（`examples/chip-id.rs`）になります:
 
 ``` rust
 {{#include examples/chip-id.rs}}
 ```
 
-Apart from the initialization, this piece of code should be straight forward if you understood the
-I2C protocol as described before. The initialization here works similarly to the one from the UART
-chapter.  We pass the peripheral as well as the pins that are used to communicate with the chip to
-the constructor; and then the frequency we wish the bus to operate on, in this case 100 kHz (`K100`,
-since identifiers can't start with a digit).
+初期化を除けば、このコードは、前述した I2C プロトコルを理解していれば素直に読めるはずです。
+ここでの初期化は UART の章のものと同様に機能します。ペリフェラル本体と、チップとの通信に使用する
+ピンをコンストラクタに渡し、その後でバスを動作させたい周波数を渡します。この場合は 100 kHz
+（`K100`、識別子は数字で始められないため）です。
 
 [nRF52833 Product Specification]: https://docs-be.nordicsemi.com/bundle/ps_nrf52833/attach/nRF52833_PS_v1.7.pdf
 [`twi(m)` module]: https://docs.rs/microbit-v2/0.11.0/microbit/hal/twim/index.html
 
-## Testing it
-As usual
+## テストする
+いつものように
 
 ```console
 $ cargo embed --example chip-id
 ```
-in order to test our little example program.
+を実行して、この小さなサンプルプログラムをテストします。

@@ -1,67 +1,68 @@
-# Rust Embedded terminology
+# Rust Embedded の用語
 
-Before we dive into programming the micro:bit let's have a quick look at the libraries and
-terminology that will be important for all the future chapters.
+micro:bit のプログラミングに入る前に、今後のすべての章で重要になるライブラリと
+用語を手短に見ておきましょう。
 
-## Abstraction layers
+## 抽象化レイヤー
 
-For any fully supported microcontroller/board with a microcontroller, you will usually hear the
-following terms being used for their levels of abstraction:
+完全にサポートされたマイクロコントローラ、またはマイクロコントローラを搭載したボードでは、
+その抽象化レベルを表す用語として、通常は次のものを耳にするでしょう。
 
 ### Peripheral Access Crate (PAC)
 
-The job of the PAC is to provide a safe (ish) direct interface to the peripherals of the chip,
-allowing you to configure every last bit however you want (of course also in wrong ways). Usually
-you only ever have to deal with the PAC if either the layers that are higher up don't fulfill your
-needs or when you are developing higher-level code for them.  Unsurprisingly, the PAC we are (mostly
-implicitly) going to use is for the [nRF52].
+PAC の役割は、チップのペリフェラルに対する（ある程度）安全な直接インターフェースを提供し、
+すべてのビットを望むとおりに設定できるようにすることです（もちろん、誤った設定もできてしまいます）。通常、
+PAC を直接扱う必要があるのは、より上位のレイヤーでは要件を満たせない場合か、
+それらのためのより高水準なコードを開発している場合だけです。 当然ながら、ここで私たちが
+（その多くは暗黙的に）使うことになる PAC は [nRF52] 用のものです。
 
 ### Hardware Abstraction Layer (HAL)
 
-The job of the HAL is to build up on top of the chip's PAC and provide an abstraction that is
-actually usable for someone who does not know about all the special behaviour of this chip.  Usually
-a HAL abstracts whole peripherals away into single structs that can, for example, be used to send
-data around via the peripheral. We are going to use the [nRF52-hal].
+HAL の役割は、チップの PAC の上に構築され、このチップ固有の特殊な振る舞いをすべて
+知らない人でも実際に使える抽象化を提供することです。 通常、
+HAL はペリフェラル全体を単一の struct に抽象化し、たとえばそのペリフェラルを使って
+データをやり取りできるようにします。 私たちは [nRF52-hal] を使います。
 
 ### Board Support Crate (BSP)
 
-(In non-Rust situations this is usually called the Board Support Package, hence the acronym.)
+（Rust 以外では、これは通常 Board Support Package と呼ばれるため、この略称になっています。）
 
-The job of the BSP is to abstract a whole board (such as the micro:bit) away at once. That means it
-has to provide abstractions to use both the microcontroller as well as the sensors, LEDs etc. that
-might be present on the board. Quite often (especially with custom-made boards) no pre-built BSP
-will be available. Instead you will be working with a HAL for the chip and build the drivers for the
-sensors either yourself or search for them on `crates.io`. Luckily for us though, the micro:bit does
-have a [BSP], so we are going to use that on top of our HAL as well.
+BSP の役割は、ボード全体（micro:bit など）をまとめて抽象化することです。 つまり、
+マイクロコントローラだけでなく、そのボード上に搭載されている可能性のあるセンサーや LED なども
+利用できる抽象化を提供する必要があります。 かなり多くの場合（特にカスタムメイドのボードでは）、
+あらかじめ用意された BSP は存在しません。 その代わり、チップ向けの HAL を使い、
+センサー用のドライバは自分で実装するか、`crates.io` で探すことになります。 ただ幸いなことに、micro:bit には
+[BSP] があるので、HAL に加えてそれも使っていきます。
 
 [nrF52]: https://crates.io/crates/nrf52833-pac
 [nrF52-hal]: https://crates.io/crates/nrf52833-hal
 [BSP]: https://crates.io/crates/microbit-v2
 
-## Unifying the layers
+## レイヤーの統一
 
-Next we are going to have a look at a very central piece of software
-in the Rust Embedded world: [`embedded-hal`]. As its name suggests it
-relates to the 2nd level of abstraction we got to know: the HALs.
-The idea behind [`embedded-hal`] is to provide a set of traits that
-describe behaviour which is usually shared across all implementations
-of a specific peripheral in all the HALs. For example one would always
-expect to have functions that are capable of turning the power on a pin
-either on or off: to switch an LED on and off on the board or whatever.
+次に、Rust Embedded の世界で非常に中心的なソフトウェア
+である [`embedded-hal`] を見ていきます。 その名前が示すとおり、これは
+先ほど見た第 2 の抽象化レベル、つまり HAL に関係しています。
+[`embedded-hal`] の考え方は、
+各 HAL における特定のペリフェラルのすべての実装で通常共有される
+振る舞いを記述する trait の集合を提供することです。 たとえば、
+ピンの電源をオンまたはオフにできる関数は常にあると期待するでしょう。
+これは、ボード上の LED を点灯・消灯したり、そのほかの何かに使ったりするためです。
 
-`embedded-hal` allows us to write a driver for some piece of hardware, for example a temperature
-sensor, that can be used on any chip for which an implementation of the [`embedded-hal`] traits
-exists. This is accomplished by writing the driver in such a way that it only relies on the
-[`embedded-hal`] traits. Drivers that are written in such a way are called *platform-agnostic.*
-Luckily for us, the drivers we will be getting from `crates.io` are almost all platform agnostic.
+`embedded-hal` を使うと、たとえば温度
+センサーのようなハードウェア向けのドライバを、[`embedded-hal`] trait の実装が
+存在するあらゆるチップで使える形で書けます。 これは、ドライバを
+[`embedded-hal`] trait にのみ依存するように書くことで
+実現されます。 そのように書かれたドライバは *プラットフォーム非依存* と呼ばれます。
+幸い、`crates.io` から入手するドライバのほとんどはプラットフォーム非依存です。
 
 [`embedded-hal`]: https://crates.io/crates/embedded-hal
 
 
-## Further reading
+## さらに読む
 
-If you want to learn more about these levels of abstraction, Franz Skarman (a.k.a. [TheZoq2]) held a
-talk about this topic during Oxidize 2020: [An Overview of the Embedded Rust Ecosystem].
+これらの抽象化レベルについてさらに学びたい場合は、Franz Skarman（別名 [TheZoq2]）が
+Oxidize 2020 でこのトピックについて講演しています: [An Overview of the Embedded Rust Ecosystem]。
 
 [TheZoq2]: https://github.com/TheZoq2/
 [An Overview of the Embedded Rust Ecosystem]: https://www.youtube.com/watch?v=vLYit_HHPaY

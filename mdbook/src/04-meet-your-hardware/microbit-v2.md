@@ -1,66 +1,52 @@
-# Nordic nRF52833 (the "nRF52", micro:bit v2)
+# Nordic nRF52833（「nRF52」、micro:bit v2）
 
-Our MCU has 73 tiny metal **pins** sitting right underneath it (it's a so called [aQFN73] chip).
-These pins are connected to **traces**, the little "roads" that act as the wires connecting
-components together on the board. The MCU can dynamically alter the electrical properties of the
-pins. This works similarly to a light switch, altering how electrical current flows through a
-circuit. By enabling or disabling electrical current to flow through a specific pin, an LED attached
-to that pin (via the traces) can be turned on and off.
+この MCU には、その真下に 73 本の小さな金属製の **ピン** があります（いわゆる [aQFN73] チップです）。
+これらのピンは **トレース** に接続されています。トレースとは、基板上で部品同士をつなぐ配線として機能する、小さな「道路」のようなものです。
+MCU は、ピンの電気的特性を動的に変化させることができます。
+これは、回路内を電流がどのように流れるかを変えるという点で、照明のスイッチに似ています。
+特定のピンに電流を流せるようにしたり流れないようにしたりすることで、そのピンに（トレースを介して）接続された LED をオン/オフできます。
 
-Each manufacturer uses a different part numbering scheme, but many will allow you to
-determine information about a component simply by looking at the part number. Looking at our
-MCU's part number we find `N52833 QIAAA0 2024AL`: you probably cannot see it with your bare
-eye, but it is on the chip. (If you have a later revision of MB2, your number may vary
-somewhat. This not an issue. The `N52833` part should be there, though.) The `N` at the
-front hints to us that this is a part manufactured by [Nordic Semiconductor].  Looking up
-the part number on their website we quickly find the [product page].  There we learn that
-our chip's main marketing point is that it is a "Bluetooth Low Energy and 2.4 GHz SoC" (SoC
-being short for "System on a Chip"), which explains the RF in the product name since RF is
-short for radio frequency.  If we search through the documentation of the chip linked on the
-[product page] for a bit we find the [product specification] which contains chapter 10
-"Ordering Information" dedicated to explaining the weird chip naming. Here we learn that:
+メーカーごとに部品番号の付け方は異なりますが、多くの場合、部品番号を見るだけでその部品に関する情報をある程度読み取れます。
+この MCU の部品番号を見ると、`N52833 QIAAA0 2024AL` とあります。おそらく肉眼では見えませんが、チップ上に記されています。
+（MB2 のより新しいリビジョンを持っている場合、この番号は多少異なるかもしれません。これは問題ありません。ただし、`N52833` の部分はあるはずです。）
+先頭の `N` は、これが [Nordic Semiconductor] 製の部品であることを示唆しています。
+その部品番号を同社のウェブサイトで調べると、すぐに [product page] が見つかります。
+そこから、このチップの主な売り文句が「Bluetooth Low Energy and 2.4 GHz SoC」であることがわかります（SoC は「System on a Chip」の略です）。また、RF は radio frequency の略なので、これで製品名に RF が入っている理由も説明できます。
+さらに、[product page] からたどれるこのチップのドキュメントを少し調べると、[product specification] が見つかります。この文書には、第 10 章「Ordering Information」があり、この奇妙なチップ名の説明に割かれています。ここから次のことがわかります。
 
 [aQFN73]: https://en.wikipedia.org/wiki/Flat_no-leads_package
 [Nordic Semiconductor]: https://www.nordicsemi.com/
 [product page]: https://www.nordicsemi.com/products/nrf52833
 [product specification]: https://docs-be.nordicsemi.com/bundle/ps_nrf52833/attach/nRF52833_PS_v1.7.pdf
 
-- The `N52` is the MCU's series, indicating that there are other `nRF52` MCUs
-- The `833` is the part code
-- The `QI` is the package code, short for `aQFN73`
-- The `AA` is the variant code, indicating how much RAM and flash memory the MCU has,
-  in our case 512 kilobyte flash and 128 kilobyte RAM
-- The `A0` is the build code, indicating the hardware version (`A`) as well as the product configuration (`0`)
-- The `2024AL` is a tracking code, hence it might differ on your chip
+- `N52` は MCU のシリーズであり、ほかにも `nRF52` MCU があることを示しています
+- `833` は部品コードです
+- `QI` はパッケージコードで、`aQFN73` の略です
+- `AA` はバリアントコードで、MCU がどれだけの RAM とフラッシュメモリを持つかを示します。今回の場合は 512 キロバイトのフラッシュと 128 キロバイトの RAM です
+- `A0` はビルドコードで、ハードウェアバージョン（`A`）と製品構成（`0`）を示します
+- `2024AL` はトラッキングコードなので、あなたのチップでは異なっているかもしれません
 
-The [product specification] does of course contain a lot more useful information about the chip: for
-example, that the chip is an Arm® Cortex™-M4 32-bit processor.
+もちろん、[product specification] にはこのチップに関する有用な情報がほかにもたくさん含まれています。
+たとえば、このチップが Arm® Cortex™-M4 32 ビット・プロセッサであることなどです。
 
 
 ## Arm? Cortex-M4?
 
-If our chip is manufactured by Nordic, then who is Arm? And if our chip is the
-nRF52833, what is the Cortex-M4?
+このチップが Nordic によって製造されているのだとしたら、Arm とは誰なのでしょうか。
+そして、このチップが nRF52833 だとしたら、Cortex-M4 とは何なのでしょうか。
 
-You might be surprised to hear that while "Arm-based" chips are quite
-popular, the company behind the "Arm" trademark ([Arm Holdings]) doesn't
-actually manufacture chips for purchase. Instead, their primary business
-model is to just *design* parts of chips. They will then license those designs to
-manufacturers, who will in turn implement the designs (perhaps with some of
-their own tweaks) in the form of physical hardware that can then be sold.
-Arm's strategy here is different from companies like Intel, which both
-designs *and* manufactures their chips.
+「Arm ベース」のチップがかなり普及している一方で、「Arm」という商標の元になっている企業（[Arm Holdings]）は、実際には購入できるチップを製造していないと聞くと、驚くかもしれません。
+その代わり、彼らの主なビジネスモデルは、チップの一部を *設計* することです。
+そして、その設計をメーカーにライセンスし、メーカー側がその設計を（独自の調整を加えることもありますが）実際に販売可能な物理ハードウェアとして実装します。
+ここでの Arm の戦略は、自社のチップを設計し、*さらに* 製造も行う Intel のような企業とは異なります。
 
-Arm licenses a bunch of different designs. Their "Cortex-M" family of designs
-are mainly used as the core in microcontrollers. For example, the Cortex-M4
-(the core our chip is based on) is designed for low cost and low power usage.
-The Cortex-M7 is higher cost, but with more features and performance.
+Arm はさまざまな設計をライセンスしています。
+その中でも「Cortex-M」ファミリーの設計は、主にマイクロコントローラーのコアとして使われます。
+たとえば、Cortex-M4（このチップのベースとなっているコア）は、低コストかつ低消費電力向けに設計されています。
+Cortex-M7 はそれより高コストですが、その分、より多くの機能と高い性能を備えています。
 
-Luckily, you don't need to know too much about different types of processors
-or Cortex designs for the sake of this book. However, you are hopefully now a
-bit more knowledgeable about the terminology of your device. While you are
-working specifically with an nRF52833, you might find yourself reading
-documentation and using tools for Cortex-M-based chips, as the nRF52833 is
-based on a Cortex-M design.
+幸い、この本を読むうえで、さまざまな種類のプロセッサや Cortex の設計について深く知る必要はありません。
+ただ、これで自分のデバイスに関する用語について、少し理解が深まったはずです。
+あなたが具体的に扱っているのは nRF52833 ですが、nRF52833 は Cortex-M の設計をベースにしているため、Cortex-M ベースのチップ向けのドキュメントを読んだりツールを使ったりすることがあるかもしれません。
 
 [Arm Holdings]: https://www.arm.com/

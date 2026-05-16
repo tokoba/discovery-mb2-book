@@ -1,30 +1,19 @@
-# Snake game: final assembly
+# Snake game: 最終的なアセンブリ
 
-The code in our `src/main.rs` file brings all the previously-discussed machinery together to make
-our final game.
+`src/main.rs` ファイル内のコードは、これまで説明してきた仕組みをすべてまとめて、最終的なゲームを作り上げます。
 
 ```rust
 {{#include src/main.rs}}
 ```
 
-After initializing the board and its timer and RNG peripherals, we initialize a `Game` struct and a
-`Display` from the `microbit::display::blocking` module.
+ボード、そのタイマー、および RNG ペリフェラルを初期化した後、`Game` 構造体と `microbit::display::blocking` モジュールの `Display` を初期化します。
 
-In our "game loop" (which runs inside of the "main loop" we place in our `main` function), we
-repeatedly perform the following steps:
+「ゲームループ」（`main` 関数内に配置した「メインループ」の中で実行されます）では、次の手順を繰り返し実行します。
 
-1. Get a 5×5 array of bytes representing the grid. The `Game::get_matrix` method takes three integer
-   arguments (which should be between 0 and 9, inclusive) which will, eventually, represent how
-   brightly the head, tail and food should be displayed.
+1. グリッドを表す 5×5 のバイト配列を取得します。`Game::get_matrix` メソッドは 3 つの整数引数（いずれも 0 から 9 までの範囲である必要があります）を受け取り、これらは最終的に頭、尾、食べ物をどの程度明るく表示するかを表します。
 
-2. Display the matrix, for an amount of time determined by the `Game::step_len_ms` method. As
-   currently implemented, this method basically provides for 1 second between steps, reducing by
-   200ms every time the player scores 5 points (eating 1 piece of food = 1 point), subject to a
-   floor of 200ms.
+2. `Game::step_len_ms` メソッドで決まる時間だけ、行列を表示します。現在の実装では、このメソッドは基本的に各ステップの間に 1 秒を確保し、プレイヤーが 5 点獲得するたびに 200ms 短くなります（食べ物 1 個を食べる = 1 点）。ただし、下限は 200ms です。
 
-3. Check the game status. If it is `Ongoing` (which is its initial value), run a step of the game
-   and update the game state (including its `status` property). Otherwise, the game is over, so
-   flash the current image three times, then show the player's score (represented as a number of
-   illuminated LEDs corresponding to the score), and exit the game loop.
+3. ゲームの状態を確認します。これが `Ongoing`（初期値）であれば、ゲームを 1 ステップ進めてゲームの状態（`status` プロパティを含む）を更新します。そうでなければゲームは終了しているため、現在の画像を 3 回点滅させ、その後プレイヤーのスコア（スコアに対応する数の LED を点灯させたものとして表現されます）を表示して、ゲームループを終了します。
 
-Our main loop just runs the game loop repeatedly, resetting the game's state after each iteration.
+メインループでは、各反復の後にゲームの状態をリセットしながら、ゲームループを繰り返し実行するだけです。

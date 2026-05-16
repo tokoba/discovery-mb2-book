@@ -1,19 +1,19 @@
-# LED roulette
+# LEDルーレット
 
-Alright, let's build a "real" application. The goal is to get to this display of spinning lights:
+それでは、「本物の」アプリケーションを作ってみましょう。目標は、この回転するライト表示を実現することです。
 
 <p align="center">
 <video src="../assets/roulette_fast.mp4" width="500" loop="true" autoplay="true"/>
 </p>
 
-Since working with the LED pins separately is quite annoying (especially if you have to use
-basically all of them like here) you can use the `microbit-v2` BSP crate, discussed previously, to
-work with the MB2's LED "display". It works like this (`examples/light-it-all.rs`):
+LEDピンを個別に扱うのはかなり面倒なので（特に今回のように、基本的にそのほとんどすべてを
+使わなければならない場合は）、前に説明した `microbit-v2` BSPクレートを使って、
+MB2 の LED「ディスプレイ」を扱うことができます。これは次のように動作します（`examples/light-it-all.rs`）:
 
 ```rust
 {{#include examples/light-it-all.rs}}
 ```
 
-The Rust array `light_it_all` shown in the example contains 1 where the LED is on and 0 where it is
-off.  The call to `show()` takes a timer for the BSP display code to use for delaying, a *copy* of
-the array, and a length of time in milliseconds to show this display before returning.
+例で示した Rust 配列 `light_it_all` には、LED が点灯している場所に 1、消灯している場所に 0 が
+入っています。`show()` の呼び出しには、BSP のディスプレイコードが遅延に使用するタイマー、配列の *コピー*、
+そしてこの表示を表示してから復帰するまでの時間（ミリ秒）を渡します。

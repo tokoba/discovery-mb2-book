@@ -1,46 +1,32 @@
-# Build it
+# ビルドする
 
-The first step is to build our "binary" crate. Because the microcontroller has a different
-architecture than your computer we'll have to cross compile. Cross compiling in Rust land is as
-simple as passing an extra `--target` flag to `rustc`or Cargo. The complicated part is figuring out
-the argument of that flag: the *name* of the target.
+最初のステップは、"binary" クレートをビルドすることです。マイクロコントローラーはあなたのコンピューターとは異なるアーキテクチャを持っているため、クロスコンパイルする必要があります。Rust の世界では、クロスコンパイルは `rustc` または Cargo に追加の `--target` フラグを渡すだけで済むほど簡単です。複雑なのは、そのフラグの引数、つまりターゲットの *名前* を見つけることです。
 
-As we already know the microcontroller on the micro:bit v2 has a Cortex-M4F processor in it.
-`rustc` knows how to cross-compile to the Cortex-M architecture and provides several different
-targets that cover the different processors families within that architecture:
+すでに知っているとおり、micro:bit v2 のマイクロコントローラーには Cortex-M4F プロセッサーが搭載されています。`rustc` は Cortex-M アーキテクチャ向けのクロスコンパイル方法を知っており、そのアーキテクチャ内の異なるプロセッサーファミリーをカバーする複数のターゲットを提供しています。
 
-- `thumbv6m-none-eabi`, for the Cortex-M0 and Cortex-M1 processors
-- `thumbv7m-none-eabi`, for the Cortex-M3 processor
-- `thumbv7em-none-eabi`, for the Cortex-M4 and Cortex-M7 processors
-- `thumbv7em-none-eabihf`, for the Cortex-M4**F** and Cortex-M7**F** processors
-- `thumbv8m.main-none-eabi`, for the Cortex-M33 and Cortex-M35P processors
-- `thumbv8m.main-none-eabihf`, for the Cortex-M33**F** and Cortex-M35P**F** processors
+- `thumbv6m-none-eabi`、Cortex-M0 および Cortex-M1 プロセッサー向け
+- `thumbv7m-none-eabi`、Cortex-M3 プロセッサー向け
+- `thumbv7em-none-eabi`、Cortex-M4 および Cortex-M7 プロセッサー向け
+- `thumbv7em-none-eabihf`、Cortex-M4**F** および Cortex-M7**F** プロセッサー向け
+- `thumbv8m.main-none-eabi`、Cortex-M33 および Cortex-M35P プロセッサー向け
+- `thumbv8m.main-none-eabihf`、Cortex-M33**F** および Cortex-M35P**F** プロセッサー向け
 
-"Thumb" here refers to a version of the Arm instruction set that has smaller instructions for
-reduced code size (it's a pun, see). The `hf`/`F` parts have hardware floating point
-acceleration. This will make numeric computations involving fractional ("floating decimal point")
-computations much faster.
+ここでの "Thumb" は、コードサイズ削減のためにより小さい命令を持つ Arm 命令セットの一種を指します（しゃれです）。`hf`/`F` の部分は、ハードウェア浮動小数点アクセラレーションを意味します。これにより、小数を含む数値計算（「浮動小数点」計算）がずっと高速になります。
 
-For the micro:bit v2, we'll want the `thumbv7em-none-eabihf` target.
+micro:bit v2 では、`thumbv7em-none-eabihf` ターゲットを使います。
 
-Before cross-compiling you have to download a pre-compiled version of the standard library (a
-reduced version of it, actually) for your target. That's done using `rustup`:
+クロスコンパイルの前に、ターゲット向けの標準ライブラリのプリコンパイル済みバージョン（実際にはその縮小版）をダウンロードする必要があります。これは `rustup` を使って行います。
 
 ``` console
 $ rustup target add thumbv7em-none-eabihf
 ```
 
-You only need to do the above step once; `rustup` will then update this target (re-installing a new
-standard library `rust-std` component that contains the `core` library we use) whenever you update
-your toolchain. Therefore you can skip this step if you have already added the necessary target
-while [verifying your setup].
+上の手順は一度だけ行えば十分です。その後、ツールチェーンを更新するたびに `rustup` がこのターゲットを更新します（使用する `core` ライブラリを含む標準ライブラリ `rust-std` コンポーネントを再インストールします）。したがって、[verifying your setup] のときに必要なターゲットをすでに追加しているなら、この手順は省略できます。
 
 [verifying your setup]: ../03-setup/verify.html#verifying-cargo-embed
 
 
-With the `rust-std` component in place you can now cross compile the program using Cargo.  Make sure
-you are in the `mdbook/src/05-meet-your-software` directory in the Git repo, then build. This initial code
-is an example, so we compile it as such.
+`rust-std` コンポーネントが配置されたので、これで Cargo を使ってプログラムをクロスコンパイルできます。Git リポジトリの `mdbook/src/05-meet-your-software` ディレクトリにいることを確認してから、ビルドしてください。この初期コードはサンプルなので、そのようにコンパイルします。
 
 ``` console
 $ cargo build --example init
@@ -51,17 +37,13 @@ $ cargo build --example init
     Finished dev [unoptimized + debuginfo] target(s) in 33.67s
 ```
 
-> **NOTE** Be sure to compile this crate *without* optimizations. The provided `Cargo.toml` file and
-> build command above will ensure optimizations are off as long as you *don't* pass `cargo` the
-> `--release` flag.
+> **NOTE** このクレートは必ず最適化 *なし* でコンパイルしてください。提供されている `Cargo.toml` ファイルと上記のビルドコマンドにより、`cargo` に `--release` フラグを渡さない限り、最適化は無効になります。
 
-OK, now we have produced an executable. This executable won't blink any LEDs: it's just a simplified
-version that we will build upon later in the chapter.  As a sanity check, let's verify that the
-produced executable is actually an Arm binary. (The command below is equivalent to
+これで、実行可能ファイルが生成されました。この実行可能ファイルはまだ LED を点滅させません。これは、この章の後半で土台として使う簡略化版にすぎません。動作確認として、生成された実行可能ファイルが実際に Arm バイナリであることを確認してみましょう。（以下のコマンドは、
 
     readelf -h ../../../target/thumbv7em-none-eabihf/debug/examples/init
 
-on systems that have `readelf`.)
+`readelf` があるシステムでは、これと等価です。）
 
 ``` console
 $ cargo readobj --example init -- --file-headers
@@ -88,7 +70,6 @@ ELF Header:
   Section header string table index: 19
 ```
 
-If your numbers don't exactly match these, don't worry: a lot of this is quite dependent
-on the current build environment. 
+これらの数値が完全に一致しなくても心配はいりません。これらの多くは、現在のビルド環境にかなり依存します。
 
-Next, we'll flash the program into our microcontroller.
+次は、プログラムをマイクロコントローラーに書き込みます。

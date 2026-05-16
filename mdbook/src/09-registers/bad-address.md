@@ -1,15 +1,15 @@
-# `0xBAAAAAAD` address
+# `0xBAAAAAAD` アドレス
 
-Not all the peripheral memory can be accessed. Look at this program (`examples/bad.rs`).
+すべてのペリフェラルメモリにアクセスできるわけではありません。このプログラム（`examples/bad.rs`）を見てください。
 
 ```rust
 {{#include examples/bad.rs}}
 ```
 
-This address is close to the `OUT` address we used before but this address is *invalid*, in the
-sense that there's no register at this address.
+このアドレスは前に使った `OUT` アドレスに近いですが、このアドレスは *無効* です。つまり、
+このアドレスにはレジスタが存在しません。
 
-Now, let's try it.
+では、試してみましょう。
 
 ``` console
 $ cargo run
@@ -35,20 +35,22 @@ Breakpoint 3, cortex_m_rt::HardFault_ (ef=0x2001ffb8) at src/lib.rs:1046
 (gdb) 
 ```
 
-We tried to do an invalid operation, reading memory that doesn't exist, so the processor raised an
-*exception*: a *hardware* exception.
+存在しないメモリを読むという無効な操作を行おうとしたため、プロセッサは *例外*、
+つまり *ハードウェア* 例外を発生させました。
 
-In most cases, exceptions are raised when the processor attempts to perform an invalid operation.
-Exceptions break the normal flow of a program and force the processor to execute an *exception
-handler*, which is just a function/subroutine.
+多くの場合、例外はプロセッサが無効な操作を実行しようとしたときに発生します。
+例外はプログラムの通常の流れを中断し、プロセッサに *例外ハンドラ* を実行させます。
+これは単なる関数／サブルーチンです。
 
-There are different kind of exceptions. Each kind of exception is raised by different conditions and
-each one is handled by a different exception handler.
+例外にはさまざまな種類があります。各種類の例外は異なる条件で発生し、
+それぞれ別の例外ハンドラによって処理されます。
 
-The `registers` crate depends on the `cortex-m-rt` crate which defines a default *hard fault*
-handler, named `HardFault_`, that handles the "invalid memory address" exception. `embed.gdb` placed
-a breakpoint on `HardFault`; that's why the debugger halted your program while it was executing the
-exception handler.  We can get more information about the exception from the debugger. Let's see:
+`registers` クレートは `cortex-m-rt` クレートに依存しており、このクレートは
+`HardFault_` という名前のデフォルトの *ハードフォールト* ハンドラを定義しています。
+これは「無効なメモリアドレス」例外を処理します。`embed.gdb` は `HardFault` に
+ブレークポイントを設定していたため、デバッガは例外ハンドラの実行中にプログラムを
+停止しました。デバッガからこの例外についてさらに詳しい情報を得ることができます。
+見てみましょう:
 
 ```
 (gdb) list
@@ -65,7 +67,7 @@ exception handler.  We can get more information about the exception from the deb
 1050	#[no_mangle]
 ```
 
-`ef` is a snapshot of the program state right before the exception occurred. Let's inspect it:
+`ef` は、例外が発生する直前のプログラム状態のスナップショットです。これを調べてみましょう:
 
 ```
 (gdb) print/x *ef
@@ -81,9 +83,8 @@ $1 = cortex_m_rt::ExceptionFrame {
 }
 ```
 
-There are several fields here but the most important one is `pc`, the Program Counter register.  The
-address in this register points to the instruction that generated the exception. Let's disassemble
-the program around the bad instruction.
+ここにはいくつかのフィールドがありますが、最も重要なのはプログラムカウンタレジスタである `pc` です。この
+レジスタ内のアドレスは、例外を発生させた命令を指しています。問題のある命令の周辺を逆アセンブルしてみましょう。
 
 ```
 (gdb) disassemble /m ef.pc
@@ -95,7 +96,7 @@ Dump of assembler code for function core::ptr::read_volatile<u32>:
    0x000043d8 <+6>:	str	r0, [sp, #4]
    0x000043da <+8>:	str	r0, [sp, #8]
 
-1655	    // SAFETY: the caller must uphold the safety contract for `volatile_load`.
+1655	    // SAFETY: 呼び出し元は `volatile_load` の安全性契約を守らなければならない。
 1656	    unsafe {
 1657	        assert_unsafe_precondition!(
    0x000043dc <+10>:	b.n	0x43de <core::ptr::read_volatile<u32>+12>
@@ -113,7 +114,7 @@ Dump of assembler code for function core::ptr::read_volatile<u32>:
 1664	        );
 1665	        intrinsics::volatile_load(src)
    0x000043e8 <+22>:	ldr	r0, [sp, #4]
-   0x000043ea <+24>:	ldr	r0, [r0, #0]          ; <-- That's the one!
+   0x000043ea <+24>:	ldr	r0, [r0, #0]          ; <-- これです！
    0x000043ec <+26>:	str	r0, [sp, #12]
    0x000043ee <+28>:	ldr	r0, [sp, #12]
 
@@ -126,14 +127,14 @@ End of assembler dump.
 
 ```
 
-The exception was caused by the `ldr r0, [r0, #0]` instruction, a read instruction. The instruction
-tried to read the memory at the address indicated by the `r0` *CPU register*. By the way, a CPU
-(processor) register not a memory mapped register; it doesn't have an associated address like, say,
-`OUT`.
+この例外は、読み取り命令である `ldr r0, [r0, #0]` 命令によって引き起こされました。この命令
+は、`r0` *CPU レジスタ* が示すアドレスのメモリを読み取ろうとしました。ちなみに、CPU
+（プロセッサ）レジスタはメモリマップドレジスタではありません。したがって、たとえば
+`OUT` のような対応するアドレスはありません。
 
-Wouldn't it be nice if we could check what the value of the `r0` register was right at the instant
-when the exception was raised? Well, we already did! The `r0` field in the `ef` value we printed
-before is the value of `r0` register had when the exception was raised. Here it is again:
+例外が発生したまさにその瞬間に、`r0` レジスタの値が何だったのか確認できたら便利だと
+思いませんか。実は、もう確認しています！先ほど表示した `ef` の値にある `r0` フィールド
+が、例外発生時の `r0` レジスタの値です。もう一度示します:
 
 ```
 (gdb) print/x *ef
@@ -149,5 +150,5 @@ $1 = cortex_m_rt::ExceptionFrame {
 }
 ```
 
-`r0` contains the value `0x5000_A784` which is the invalid address we called the `read_volatile`
-function with.
+`r0` には `0x5000_A784` という値が入っており、これは `read_volatile`
+関数を呼び出すときに渡した無効なアドレスです。

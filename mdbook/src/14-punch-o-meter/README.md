@@ -1,11 +1,11 @@
 # Punch-o-meter
 
-In this section we'll be playing with the accelerometer that's in the board.
+このセクションでは、ボードに搭載されている加速度センサーを使っていきます。
 
-What are we building this time? A punch-o-meter! We'll be measuring the power of your jabs. Well,
-actually the maximum acceleration that you can reach because acceleration is what accelerometers
-measure. Strength and acceleration are proportional though so it's a good approximation.
+今回は何を作るのでしょうか？ Punch-o-meter です！ ジャブの威力を測定します。もっとも、
+実際に測定するのは到達できる最大加速度です。というのも、加速度センサーが測定するのは
+加速度だからです。ただし、力と加速度は比例するので、これは良い近似になります。
 
-As we already know from previous chapters the accelerometer is built inside the LSM303AGR package.
-Just like the magnetometer, it is accessible using the I2C bus. The accelerometer also has the
-same coordinate system as the magnetometer.
+前の章ですでに見たように、加速度センサーは LSM303AGR パッケージの内部に組み込まれています。
+磁力計と同様に、I2C バスを使ってアクセスできます。加速度センサーも、磁力計と同じ座標系を
+持っています。

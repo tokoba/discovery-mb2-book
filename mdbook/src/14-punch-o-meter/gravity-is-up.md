@@ -1,31 +1,15 @@
-# Gravity is up?
+# 重力は上向き？
 
-What's the first thing we'll do?
+最初に何をするのでしょうか？
 
-Perform a sanity check!
+簡単な動作確認をしましょう！
 
-You should already be able to write a program that continuously prints the accelerometer data on the
-RTT console from the [I2C chapter](../12-i2c/index.md). Mine is in `examples/show-accel.rs` in that
-chapter. Do you observe something interesting even when holding the board parallel to the floor with
-the back side facing up?  (Remember that the accelerometer is mounted on the back of the board, so
-holding it upside-down like this makes the Z axis point up.)
+ここまで来ていれば、[I2C の章](../12-i2c/index.md)で、加速度センサーのデータを RTT コンソールに継続的に表示するプログラムをすでに書けるはずです。私のものは、その章の `examples/show-accel.rs` にあります。基板の裏側を上に向けて床と平行に持っただけでも、何か興味深いことに気づきませんか？ （加速度センサーは基板の裏側に実装されているので、このように上下逆さまに持つと Z 軸は上を向くことを思い出してください。）
 
-What you should see when holding the board like this is that both the X and Y values are rather
-close to 0, while the Z value is at around 1000. Which is weird: the board is not moving, yet its
-acceleration is non-zero. What's going on? This must be related to the gravity, right? Because the
-acceleration of gravity is `1 g` (aha, `1 g` = -1000 from the accelerometer). But the gravity pulls
-objects downwards so the acceleration along the Z axis should be positive, not negative.
+このように基板を持ったときに見えるはずなのは、X と Y の値がどちらも 0 にかなり近く、一方で Z の値はおよそ 1000 になっていることです。これは奇妙です。基板は動いていないのに、加速度は 0 ではありません。何が起きているのでしょうか？ これは重力に関係しているはずですよね？ なぜなら、重力加速度は `1 g` だからです（なるほど、加速度センサーでは `1 g` = -1000 です）。しかし、重力は物体を下向きに引っ張るので、Z 軸方向の加速度は負ではなく正であるはずです。
 
-Did the program get the Z axis backwards? Nope, you can test rotating the board to align the gravity
-to the X or Y axis but the acceleration measured by the accelerometer is always pointing up.
+プログラムが Z 軸の向きを逆に扱っているのでしょうか？ いいえ。基板を回転させて重力が X 軸や Y 軸に揃うようにして試してみても、加速度センサーが測定する加速度は常に上向きです。
 
-What happens here is that the accelerometer is measuring the *proper acceleration* of the board, not
-the acceleration *you* are observing. This proper acceleration is the acceleration of the board as
-seen from an observer that's in free fall. An observer that's in free fall is moving toward the
-center of the Earth with an acceleration of `1g`; from its point of view the board is actually
-moving upwards (away from the center of the Earth) with an acceleration of `1g`. And that's why the
-proper acceleration is pointing up. This also means that if the board was in free fall, the
-accelerometer would report a proper acceleration of zero. Please, don't try that at home. Or do, if
-you're willing to risk your MB2 by dropping it.
+ここで起きているのは、加速度センサーが測定しているのは *固有加速度* であって、*あなた* が観測している加速度ではない、ということです。この固有加速度とは、自由落下している観測者から見た基板の加速度のことです。自由落下している観測者は、地球の中心に向かって `1g` の加速度で移動しています。その観測者から見ると、基板は実際には `1g` の加速度で上向き（地球の中心から遠ざかる向き）に動いているのです。だから、固有加速度は上向きになるのです。これはまた、基板が自由落下していれば、加速度センサーは 0 の固有加速度を報告することも意味します。どうか、家では試さないでください。あるいは、落として MB2 を危険にさらす覚悟があるなら、どうぞ。
 
-Yes, physics is hard. Let's move on.
+ええ、物理は難しいですね。先に進みましょう。

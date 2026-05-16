@@ -1,37 +1,37 @@
-# The Rust Code of Conduct
+# Rust 行動規範
 
-## Conduct
+## 行動
 
-**Contact**: [Resources team][team]
+**連絡先**: [リソースチーム][team]
 
-* We are committed to providing a friendly, safe and welcoming environment for all, regardless of level of experience, gender identity and expression, sexual orientation, disability, personal appearance, body size, race, ethnicity, age, religion, nationality, or other similar characteristic.
-* On IRC, please avoid using overtly sexual nicknames or other nicknames that might detract from a friendly, safe and welcoming environment for all.
-* Please be kind and courteous. There's no need to be mean or rude.
-* Respect that people have differences of opinion and that every design or implementation choice carries a trade-off and numerous costs. There is seldom a right answer.
-* Please keep unstructured critique to a minimum. If you have solid ideas you want to experiment with, make a fork and see how it works.
-* We will exclude you from interaction if you insult, demean or harass anyone. That is not welcome behavior. We interpret the term "harassment" as including the definition in the [Citizen Code of Conduct](http://citizencodeofconduct.org/); if you have any lack of clarity about what might be included in that concept, please read their definition. In particular, we don't tolerate behavior that excludes people in socially marginalized groups.
-* Private harassment is also unacceptable. No matter who you are, if you feel you have been or are being harassed or made uncomfortable by a community member, please contact one of the channel ops or any of the [Resources team][team] immediately. Whether you're a regular contributor or a newcomer, we care about making this community a safe place for you and we've got your back.
-* Likewise any spamming, trolling, flaming, baiting or other attention-stealing behavior is not welcome.
+* 私たちは、経験レベル、性自認および性表現、性的指向、障害、外見、体格、人種、民族、年齢、宗教、国籍、その他これに類する特性にかかわらず、すべての人にとって友好的で、安全で、歓迎される環境を提供することに尽力します。
+* IRC では、露骨に性的なニックネームや、すべての人にとって友好的で、安全で、歓迎される環境を損ないうるその他のニックネームの使用は避けてください。
+* 親切かつ礼儀正しくしてください。意地悪や無礼である必要はありません。
+* 人には意見の違いがあること、そしてあらゆる設計や実装の選択にはトレードオフと多くのコストが伴うことを尊重してください。唯一の正解があることはめったにありません。
+* 体系立っていない批判は最小限にしてください。試してみたい確かなアイデアがあるなら、フォークを作成して、実際にどう機能するか確かめてください。
+* 誰かを侮辱したり、貶めたり、ハラスメントを行ったりした場合、私たちはあなたを交流から排除します。そのような振る舞いは歓迎されません。私たちは「harassment」という語を、[Citizen Code of Conduct](http://citizencodeofconduct.org/) における定義を含むものとして解釈します。そこに何が含まれるのか不明な点がある場合は、その定義を読んでください。特に、社会的に周縁化されたグループの人々を排除するような振る舞いは容認しません。
+* 非公開の場でのハラスメントも認められません。あなたが誰であれ、コミュニティメンバーからハラスメントを受けた、または不快な思いをさせられていると感じた場合は、ただちにチャネルオペレーターのいずれか、または[リソースチーム][team]の誰かに連絡してください。あなたが常連のコントリビューターであっても新しく参加した人であっても、私たちはこのコミュニティをあなたにとって安全な場にすることを大切にしており、あなたの味方です。
+* 同様に、スパム、荒らし、フレーム、挑発、あるいはその他の注意を引くことを目的とした行為も歓迎されません。
 
-## Moderation
+## モデレーション
 
-These are the policies for upholding our community's standards of conduct.
+以下は、私たちのコミュニティの行動基準を維持するための方針です。
 
-1. Remarks that violate the Rust standards of conduct, including hateful, hurtful, oppressive, or exclusionary remarks, are not allowed. (Cursing is allowed, but never targeting another user, and never in a hateful manner.)
-2. Remarks that moderators find inappropriate, whether listed in the code of conduct or not, are also not allowed.
-3. Moderators will first respond to such remarks with a warning.
-4. If the warning is unheeded, the user will be "kicked," i.e., kicked out of the communication channel to cool off.
-5. If the user comes back and continues to make trouble, they will be banned, i.e., indefinitely excluded.
-6. Moderators may choose at their discretion to un-ban the user if it was a first offense and they offer the offended party a genuine apology.
-7. If a moderator bans someone and you think it was unjustified, please take it up with that moderator, or with a different moderator, **in private**. Complaints about bans in-channel are not allowed.
-8. Moderators are held to a higher standard than other community members. If a moderator creates an inappropriate situation, they should expect less leeway than others.
+1. Rust の行動基準に違反する発言（憎悪的、侮辱的、抑圧的、または排他的な発言を含む）は許可されません。（罵り言葉自体は許容されますが、決して他の利用者を標的にしてはならず、決して憎悪的な形であってはなりません。）
+2. モデレーターが不適切だと判断した発言は、行動規範に記載されているかどうかにかかわらず、許可されません。
+3. モデレーターは、まずそのような発言に対して警告を行います。
+4. 警告が無視された場合、その利用者は「キック」されます。つまり、頭を冷やすためにコミュニケーションチャネルから退出させられます。
+5. その利用者が戻ってきて問題行動を続ける場合、その人は BAN されます。つまり、無期限に排除されます。
+6. モデレーターは、それが初犯であり、かつ相手を不快にさせた当事者に誠意ある謝罪をした場合には、裁量によりその利用者の BAN を解除してもかまいません。
+7. モデレーターが誰かを BAN し、それが不当だと思う場合は、そのモデレーター、または別のモデレーターに、**非公開で**申し立ててください。チャネル内で BAN について苦情を述べることは認められません。
+8. モデレーターには、他のコミュニティメンバーよりも高い基準が求められます。モデレーターが不適切な状況を作り出した場合、他の人よりも裁量の余地は少ないものと考えるべきです。
 
-In the Rust community we strive to go the extra step to look out for each other. Don't just aim to be technically unimpeachable, try to be your best self. In particular, avoid flirting with offensive or sensitive issues, particularly if they're off-topic; this all too often leads to unnecessary fights, hurt feelings, and damaged trust; worse, it can drive people away from the community entirely.
+Rust コミュニティでは、互いに気を配るために、もう一歩踏み込むよう努めています。技術的に非の打ちどころがないことだけを目指すのではなく、人として最善を尽くしてください。特に、攻撃的またはセンシティブな問題に軽々しく踏み込むことは避けてください。とりわけ、それが話題と無関係な場合にはなおさらです。そうしたことはあまりにも頻繁に、不必要な争い、傷ついた感情、損なわれた信頼につながります。さらに悪いことに、人々をコミュニティそのものから完全に遠ざけてしまうこともあります。
 
-And if someone takes issue with something you said or did, resist the urge to be defensive. Just stop doing what it was they complained about and apologize. Even if you feel you were misinterpreted or unfairly accused, chances are good there was something you could've communicated better — remember that it's your responsibility to make your fellow Rustaceans comfortable. Everyone wants to get along and we are all here first and foremost because we want to talk about cool technology. You will find that people will be eager to assume good intent and forgive as long as you earn their trust.
+また、あなたの発言や行動について誰かが問題を提起した場合は、防御的になりたい衝動を抑えてください。相手が苦情を述べた行為をただやめて、謝罪してください。たとえ自分が誤解された、あるいは不当に非難されたと感じたとしても、もっとよく伝えられたことがあった可能性は高いものです — 仲間の Rustacean が心地よく過ごせるようにするのは、あなたの責任であることを忘れないでください。誰もがうまくやっていきたいと思っており、私たち全員がここにいる第一の理由は、すばらしい技術について話したいからです。人々の信頼を得られれば、相手の善意を前提に受け止め、喜んで許してくれることが分かるでしょう。
 
-The enforcement policies listed above apply to all official embedded WG venues; including official IRC channels (#rust-embedded); GitHub repositories under rust-embedded; and all forums under rust-embedded.org (forum.rust-embedded.org).
+上記の施行方針は、公式 IRC チャネル（#rust-embedded）、rust-embedded 配下の GitHub リポジトリ、および rust-embedded.org 配下のすべてのフォーラム（forum.rust-embedded.org）を含む、公式な embedded WG のすべての場に適用されます。
 
-*Adapted from the [Node.js Policy on Trolling](http://blog.izs.me/post/30036893703/policy-on-trolling) as well as the [Contributor Covenant v1.3.0](https://www.contributor-covenant.org/version/1/3/0/).*
+*[Node.js Policy on Trolling](http://blog.izs.me/post/30036893703/policy-on-trolling) および [Contributor Covenant v1.3.0](https://www.contributor-covenant.org/version/1/3/0/) をもとに改変。*
 
 [team]: https://github.com/rust-embedded/wg#the-resources-team

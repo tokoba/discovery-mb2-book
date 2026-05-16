@@ -1,30 +1,32 @@
-# The MB2 Speaker
+# MB2 のスピーカー
 
-Your MB2 has a built-in speaker — the large black square device labeled "SPEAKER" in the middle of
-the back of the board.
+MB2 にはスピーカーが内蔵されています。これは、ボード裏面の中央にある、
+"SPEAKER" とラベル付けされた大きな黒い正方形のデバイスです。
 
-The speaker works by moving air in response to a GPIO pin: when the speaker pin is high (3.3V) a
-diaphragm inside — the "speaker cone" — is pushed all the way out; when the speaker pin is low (GND)
-it is pulled all the way back in. As air is pushed out and sucked back in, it flows in and out of
-the tiny rectangular hole — the "speaker port" — on the side of the device.  Do this fast enough,
-and the pressure changes will make a sound.
+このスピーカーは GPIO ピンに応答して空気を動かすことで動作します。スピーカーのピンが
+ハイ (3.3V) のとき、内部の振動板 — 「speaker cone」 — はいちばん外側まで押し出されます。
+スピーカーのピンがロー (GND) のときには、いちばん内側まで引き戻されます。空気が押し出され、
+また吸い戻されると、デバイスの側面にある小さな長方形の穴 — 「speaker port」 — を通って
+空気が出入りします。これを十分に速く行うと、圧力の変化によって音が出ます。
 
-<img class="white_bg" height="350" title="Speaker" src="../assets/speaker.svg" />
+<img class="white_bg" height="350" title="スピーカー" src="../assets/speaker.svg" />
 
-With the right hardware driving it, this speaker cone could actually be moved to any position in its
-range with an appropriate current. This would allow fairly good reproduction of any sound, like a
-"normal" speaker. Unfortunately, limitations in the MB2 hardware controlling the speaker mean that
-only the full-in and full-out positions are readily available.
+適切なハードウェアで駆動できれば、このスピーカーコーンは、適切な電流によってその可動範囲内の
+任意の位置へ実際に移動させることができます。そうすれば、「普通の」スピーカーのように、
+どんな音でもかなりよく再現できます。残念ながら、スピーカーを制御する MB2 のハードウェアには
+制約があるため、簡単に利用できるのは、完全に内側と完全に外側の位置だけです。
 
-Let's push the speaker cone out and then in 220 times per second. This will produce a "square"
-220-cycles-per-second pressure wave. The unit "cycles-per-second" is Hertz; we will be producing a
-220Hz tone (a musical "A3"), which is not unpleasant on this shrill speaker.
+では、スピーカーコーンを 1 秒間に 220 回、外側へ押し出してから内側へ戻してみましょう。
+これにより、1 秒あたり 220 周期の「矩形」圧力波が生じます。「cycles-per-second」という単位は
+ヘルツです。つまり、220Hz の音（音楽でいう「A3」）を生成することになります。これは、この
+甲高いスピーカーでもそれほど不快ではありません。
 
-We'll make our tone play for five seconds and then stop. It is important to remember that our
-program lives in flash on the MB2 — the tone will start up again each time we reset or even power on
-the MB2. If we let the tone run forever, this behavior can rapidly become quite annoying.
+この音を 5 秒間鳴らしてから止めることにします。ここで覚えておくべき重要な点は、この
+プログラムが MB2 のフラッシュ上にあることです — つまり、MB2 をリセットするたびに、さらには
+電源を入れるたびにも、その音は再び鳴り始めます。音を永遠に鳴らし続けるようにすると、この挙動は
+すぐにかなり煩わしいものになりかねません。
 
-Here's the code (`examples/square-wave.rs`).
+コードは次のとおりです (`examples/square-wave.rs`)。
 
 ```rust
 {{#include examples/square-wave.rs}}

@@ -1,14 +1,13 @@
-# Polling
+# ポーリング
 
-Now that we've learned how to read GPIO inputs, let's consider how we might use these reads practically. Suppose we want our program to turn on an LED when Button A is pressed and turn it off when Button B is pressed.  We can do this by polling the state of both buttons in a loop, and responding accordingly when a button is read to be pressed.  Here's how we might write this program:
+GPIO 入力の読み取り方法を学んだので、次はこれらの読み取りを実際にどのように使えるかを考えてみましょう。たとえば、Button A が押されたときに LED を点灯し、Button B が押されたときに消灯するようにプログラムしたいとします。これは、ループの中で両方のボタンの状態をポーリングし、ボタンが押されていると読み取られたときにそれに応じて処理を行うことで実現できます。このプログラムは次のように書けます。
 
 ```rust
 {{#include examples/polling-led-toggle.rs}}
 ```
 
-This method of repeatedly checking inputs in a loop is called polling.  When we check the state of some input, we say we are *polling* that input.  In this case, we are polling both Button A and Button B.
+このようにループの中で入力を繰り返し確認する方法は、ポーリングと呼ばれます。ある入力の状態を確認するとき、その入力を *ポーリングしている* と言います。この場合、Button A と Button B の両方をポーリングしています。
 
-Polling is simple but allows us to do interesting things based on the external world.  For all of our device's inputs, we can "poll" them in a loop, and respond to the results in some way, one by one.  This kind of method is very conceptually simple and is a good starting point for many projects.  We'll soon find out why polling might not be the best method for all (or even most) cases, but let's try it out first.
+ポーリングは単純ですが、外界に応じて興味深いことを行えます。デバイスのすべての入力について、それらをループの中で「ポーリング」し、その結果に何らかの形で 1 つずつ応答できます。この種の方法は概念的に非常に単純で、多くのプロジェクトにとって良い出発点です。ポーリングがすべてのケース（あるいは大半のケース）にとって最善の方法ではないかもしれない理由は、すぐにわかるでしょう。しかし、まずは試してみましょう。
 
-**Note** "Polling" is often used on two levels of granularity.  At one level, "polling" is used to refer to asking (once) what the state of an input is.  At a higher level, "polling", or perhaps "polling in a loop", is used to refer to asking (repeatedly) what the state of an input is in a simple control flow like the one we used above.  This kind of use of the word to refer to a control flow is used only in the simplest of programs, and seldom used in production (it's not practical as we'll soon see), so generally when embedded engineers talk about polling, they mean the former, i.e. to ask (once) what the state of an input is.
-
+**注** 「ポーリング」という語は、粒度の異なる 2 つのレベルで使われることがよくあります。ひとつのレベルでは、「ポーリング」は、入力の状態がどうなっているかを（1 回だけ）問い合わせることを指します。より高いレベルでは、「ポーリング」、あるいは「ループの中でのポーリング」は、上で使ったような単純な制御フローで、入力の状態がどうなっているかを（繰り返し）問い合わせることを指します。このように、制御フローを指してこの語が使われるのはごく単純なプログラムだけであり、本番環境ではほとんど使われません（すぐにわかるように、実用的ではないためです）。そのため、一般に組み込みエンジニアがポーリングについて話すときは、前者、すなわち入力の状態がどうなっているかを（1 回だけ）問い合わせることを意味します。

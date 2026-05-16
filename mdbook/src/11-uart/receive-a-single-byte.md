@@ -1,19 +1,17 @@
-# Receive a single byte
+# 1バイトを受信する
 
-So far we can send data from the microcontroller to your computer. It's time to try the opposite:
-receiving data from your computer (`examples/receive-byte.rs`).
+ここまでは、マイクロコントローラからコンピュータへデータを送信できました。次は逆を試しましょう。
+つまり、コンピュータからデータを受信します（`examples/receive-byte.rs`）。
 
 ``` rust
 {{#include examples/receive-byte.rs}}
 ```
 
-The only part that changed, compared to our send byte program, is the loop at the end of
-`main()`. Here we use the `serial.read()` function in order to wait until a byte is available and
-read it. Then we print that byte into our RTT debugging console to see whether stuff is actually
-arriving.
+バイト送信プログラムと比べて変更された唯一の部分は、`main()` の最後にあるループです。ここでは、
+`serial.read()` 関数を使って、1バイトが利用可能になるまで待機し、それを読み取ります。その後、その
+バイトを RTT デバッグコンソールに出力して、実際にデータが届いているかどうかを確認します。
 
-Note that if you flash this program and start typing characters inside `minicom` to send them to
-your microcontroller you'll only be able to see numbers inside your RTT console since we are not
-converting the `u8` we received into an actual `char`.  Since the conversion from `u8` to `char` is
-quite simple, I'll leave this task to you if you really do want to see the characters inside the RTT
-console.
+このプログラムを書き込んで、`minicom` の中で文字を入力してマイクロコントローラに送信し始めても、
+RTT コンソール内には数字しか表示されないことに注意してください。これは、受信した `u8` を実際の
+`char` に変換していないためです。`u8` から `char` への変換は非常に簡単なので、本当に RTT
+コンソール内で文字を見たいのであれば、この作業はあなたにお任せします。

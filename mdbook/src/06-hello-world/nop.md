@@ -1,31 +1,30 @@
 # NOP
 
-You might wonder what that `nop()` call is doing in the `wait()` loop in `src/bin/spin-wait.rs`.
+`src/bin/spin-wait.rs` の `wait()` ループ内にある `nop()` 呼び出しが何をしているのか、不思議に思うかもしれません。
 
-The answer is that it literally does nothing. The `nop()` function causes the compiler to put a
-`NOP` Arm machine instruction at that point in the program. `NOP` is a special instruction that
-causes the CPU to skip it. To ignore it. To literally do No OPeration with it (hence the name).
+答えは、文字どおり何もしていない、ということです。`nop()` 関数は、その箇所に
+`NOP` という Arm の機械命令をプログラム内に配置するようコンパイラに指示します。`NOP` は特別な命令で、
+CPU はそれを飛ばします。無視します。文字どおり、それに対して何の操作も行いません（名前の由来もそこにあります）。
 
-So get rid of that line and recompile the program. Don't forget `--release` mode. Then run it.
+では、その行を削除してプログラムを再コンパイルしましょう。`--release` モードを忘れないでください。その後、実行します。
 
-We're back to a slightly darker solid LED again. With no loop body, the compiler's optimizer decided
-that `wait()` function wasn't doing anything. So it just removed it for you at compile time. Thanks
-optimizer. You have made my wait loop infinitely fast.
+また、少し暗めの単色 LED に戻りました。ループ本体がなくなったことで、コンパイラの最適化器は
+`wait()` 関数が何もしていないと判断しました。そこで、コンパイル時にそれを丸ごと取り除いてしまったのです。ありがとう、最適化器。
+おかげで私の待機ループは無限に高速になりました。
 
-How does `nop()` do its job? Well, if you look at the implementation of `nop()` you will find
-(after a bunch of digging around) that it is implemented like this:
+`nop()` はどのようにしてその役目を果たしているのでしょうか？ `nop()` の実装を見ると、
+（あちこちかなり掘り下げた先で）次のように実装されていることがわかります。
 
 ```rust
 asm!("nop", options(nomem, nostack, preserves_flags));
 ```
 
-The `nop()` function is "inlined", so when you "call" it an actual Arm `NOP` assembly instruction is
-inserted into your program's code at that point. Because details, this `NOP` will not be removed or
-moved around by the compiler: it will stay right there where you put it.
+`nop()` 関数は「インライン化」されるため、それを「呼び出す」と、その場所に実際の Arm の `NOP` アセンブリ命令が
+プログラムのコードへ挿入されます。細かい事情により、この `NOP` はコンパイラによって削除されたり
+別の場所へ移動されたりしません。あなたが置いたその場所に、きちんと留まります。
 
-The ability to insert assembly code into your program where needed is sometimes quite important in
-embedded programming. Sometime a CPU will have instructions the compiler doesn't know about, but
-that you still need in order to use the CPU effectively. Rust's `asm!()` directive gives you a way
-to do that.
+必要な箇所にアセンブリコードをプログラムへ挿入できる能力は、組み込みプログラミングではときに非常に重要です。
+CPU には、コンパイラが知らない命令が存在することがありますが、それでも CPU を効果的に使うためには
+それらが必要になることがあります。Rust の `asm!()` ディレクティブは、それを行う手段を提供します。
 
-Our spin-wait is still terrible. Let's talk about doing better.
+私たちのスピンウェイトは、まだひどいままです。もっと良くする方法について話しましょう。

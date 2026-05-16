@@ -1,20 +1,9 @@
-# The Challenge
+# 課題
 
-Let's make the MB2 into a siren! But not just any siren — an
-interrupt-driven siren. That way we can turn the siren on
-and the rest of our program can run on, ignoring it.
+MB2 をサイレンにしてみましょう！ ただし、ただのサイレンではなく、割り込み駆動のサイレンです。そうすれば、サイレンをオンにしたあとも、プログラムの残りの部分はそれを無視して動き続けることができます。
 
-Make your siren sweep the pitch from 440Hz to 660Hz and back
-over a one-second period. The main program should start the
-siren, then print a ten-second countdown from 10 to 1, then
-stop the siren and print "launch!". The main program should
-not mess with the siren during countdown — it should just be
-interrupt-driven.
+サイレンのピッチが、1 秒周期で 440Hz から 660Hz まで上がり、また戻るようにしてください。メインプログラムはサイレンを開始し、その後 10 から 1 までの 10 秒間のカウントダウンを表示し、次にサイレンを停止して `"launch!"` と表示する必要があります。カウントダウン中、メインプログラムはサイレンに手を出してはいけません。サイレンは完全に割り込み駆動であるべきです。
 
-*Hint:* I found it easiest to use a global locked `Siren`
-struct that owned the state of the siren and the peripherals
-it needed to operate.
+*ヒント:* 私は、サイレンの状態と、それを動作させるのに必要な周辺機器を所有する、グローバルなロック付き `Siren` 構造体を使うのがいちばん簡単だと感じました。
 
-This is a fancy program that introduces a lot of new
-ideas. Don't be surprised if it takes you a bit to figure it
-out.
+これは多くの新しい考え方を導入する、少し高度なプログラムです。理解するのに少し時間がかかっても、驚かないでください。

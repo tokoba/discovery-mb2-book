@@ -1,19 +1,19 @@
-# Inputs and Polling
+# 入力とポーリング
 
-In earlier chapters, we’ve explored GPIO pins primarily as outputs—driving LEDs on and off. However, GPIO pins can also be configured as inputs, allowing your program to read signals from the physical world, like button presses or switch toggles. In this chapter, we'll learn how to read these input signals and do something useful with them.
+これまでの章では、GPIO ピンを主に出力として扱い、LED を点灯・消灯してきました。しかし、GPIO ピンは入力として設定することもでき、ボタンの押下やスイッチの切り替えのような物理世界からの信号をプログラムで読み取れます。この章では、これらの入力信号を読み取り、それを使って何か役に立つことを行う方法を学びます。
 
-## Reading Button State
+## ボタン状態の読み取り
 
-The micro:bit v2 has two physical buttons, Button A and Button B, connected to GPIO pins configured as inputs. Specifically, Button A is connected to pin P0.14, and Button B to pin P0.23. (You can verify this from the official [pinmap table].)
+micro:bit v2 には、入力として設定された GPIO ピンに接続された 2 つの物理ボタン、Button A と Button B があります。具体的には、Button A はピン P0.14 に、Button B はピン P0.23 に接続されています。（これは公式の [pinmap table] で確認できます。）
 
 [pinmap table]: https://tech.microbit.org/hardware/schematic/#v2-pinmap
 
-Reading the state of a GPIO input involves checking whether the voltage level at the pin is high (3.3V, logic level 1) or low (0V, logic level 0). Each button on the micro:bit is connected to a pin. When the button is *not* pressed, that pin is held high; when the button is pressed, the pin is held low.
+GPIO 入力の状態を読み取るには、そのピンの電圧レベルがハイ（3.3V、論理レベル 1）かロー（0V、論理レベル 0）かを確認します。micro:bit の各ボタンは 1 本のピンに接続されています。ボタンが *押されていない* とき、そのピンはハイに保たれます。ボタンが押されると、そのピンはローに保たれます。
 
-Let's now apply this knowledge to reading the state of Button A by checking if the button is "low" (pressed).
+では、この知識を使って、ボタンが「ロー」（押下状態）かどうかを確認しながら Button A の状態を読み取ってみましょう。
 
 ```rust
 {{#include examples/button-a-bsp.rs}}
 ```
 
-We spin looking at the button state, and report anytime that state changes.
+ボタンの状態を監視し続け、その状態が変化するたびに報告します。

@@ -1,29 +1,29 @@
-# (mis)Optimization
+# （誤）最適化
 
-Reads/writes to registers are quite special. I may even dare to say that they are embodiment of side
-effects. In the previous example we wrote four different values to the same register. If you didn't
-know that address was a register, you may have simplified the logic to just write the final value
-`0x00000000` into the register.
+レジスタへの読み書きはかなり特殊です。私は、これは副作用そのものの体現だとさえ言っても
+よいと思っています。前の例では、同じレジスタに 4 つの異なる値を書き込みました。その
+アドレスがレジスタだと知らなければ、最後の値
+`0x00000000` をレジスタに書き込むだけにロジックを単純化してしまっていたかもしれません。
 
-Actually, LLVM, the compiler's backend / optimizer, does not know we are dealing with a register and
-will merge the writes thus changing the behavior of our program. Let's check that really quick.
+実際には、コンパイラのバックエンド / オプティマイザである LLVM は、私たちがレジスタを扱っていることを知らず、
+書き込みを統合してしまうため、プログラムの動作が変わってしまいます。それを手早く確認してみましょう。
 
-First, we'll use cargo objdump to get us the assembly of the build artifacts from both the optimized
-and the non-optimized build.
+まず、cargo objdump を使って、最適化ビルドと
+非最適化ビルドの両方のビルド成果物のアセンブリを取得します。
 
 ```
-# Non-optimized
+# 非最適化
 cargo objdump -- --disassemble --no-show-raw-insn --source > debug.dump
-# Optimized
+# 最適化あり
 cargo objdump --release -- --disassemble --no-show-raw-insn --source > release.dump
 ```
 
-Let's see what's in there. Specifically, let's try to find the assembly that manipulates the `OUT`
-register.
+中身を見てみましょう。具体的には、`OUT`
+レジスタを操作しているアセンブリを探してみます。
 
-First, let's have a look at the contents of `debug.dump`, the assembly from the non-optimized build.
-I skipped a bunch and added my comments behind the `; <--`, indicating the line number in the source
-code that corresponds to the instruction.
+まず、非最適化ビルドのアセンブリである `debug.dump` の内容を見てみましょう。
+かなりの部分を飛ばし、`; <--` の後ろに私のコメントを追加しています。これは、その命令に対応するソース
+コードの行番号を示しています。
 
 ```
 $ cat debug.dump
@@ -38,29 +38,29 @@ $ cat debug.dump
      162:      	mov	r7, sp
      164:      	sub	sp, #0x8
      166:      	bl	0x198 <registers::init::hb6346637538e8ec5> @ imm = #0x2e
-     16a:      	movw	r1, #0x504        ; <-- Load lower half of `OUT` register address into register `r1`
-     16e:      	movt	r1, #0x5000       ; <-- Load upper half of `OUT` register address into register `r1`
+     16a:      	movw	r1, #0x504        ; <-- `OUT` レジスタのアドレスの下位半分をレジスタ `r1` に読み込む
+     16e:      	movt	r1, #0x5000       ; <-- `OUT` レジスタのアドレスの上位半分をレジスタ `r1` に読み込む
      172:      	str	r1, [sp, #0x4]
-     174:      	ldr	r0, [r1]          ; <-- (16) Load value at the address in `r1` into `r0`.
-     176:      	orr	r0, r0, #0x200000 ; <-- (16) Bitwise OR the value in `r0` with `0x200000`, and store in `r0`
-     17a:      	str	r0, [r1]          ; <-- (16) Store contents of `r0` in memory at address from `r1`
-     17c:      	ldr	r0, [r1]          ; <-- (19) Load value at the address in `r1` into `r0`.
-     17e:      	orr	r0, r0, #0x80000  ; <-- (19) Bitwise OR the value in `r0` with `0x80000`, and store in `r0`
-     182:      	str	r0, [r1]          ; <-- (19) Store contents of `r0` in memory at address from `r1`
-     184:      	ldr	r0, [r1]          ; <-- (22) Load value at the address in `r1` into `r0`.
-     186:      	bic	r0, r0, #0x200000 ; <-- (22) Bitwise AND the value in `r0` with bitwise complement of `0x200000`, and store in `r0`
-     18a:      	str	r0, [r1]          ; <-- (22) Store contents of `r0` in memory at address from `r1`
-     18c:      	ldr	r0, [r1]          ; <-- (25) Load value at the address in `r1` into `r0`.
-     18e:      	bic	r0, r0, #0x80000  ; <-- (25) Bitwise AND the value in `r0` with bitwise complement of `0x80000`, and store in `r0`
-     192:      	str	r0, [r1]          ; <-- (25) Store contents of `r0` in memory at address from `r1`
+     174:      	ldr	r0, [r1]          ; <-- (16) `r1` にあるアドレスの値を `r0` に読み込む。
+     176:      	orr	r0, r0, #0x200000 ; <-- (16) `r0` の値と `0x200000` のビット単位 OR を取り、その結果を `r0` に格納する
+     17a:      	str	r0, [r1]          ; <-- (16) `r0` の内容を、`r1` にあるアドレスが指すメモリに格納する
+     17c:      	ldr	r0, [r1]          ; <-- (19) `r1` にあるアドレスの値を `r0` に読み込む。
+     17e:      	orr	r0, r0, #0x80000  ; <-- (19) `r0` の値と `0x80000` のビット単位 OR を取り、その結果を `r0` に格納する
+     182:      	str	r0, [r1]          ; <-- (19) `r0` の内容を、`r1` にあるアドレスが指すメモリに格納する
+     184:      	ldr	r0, [r1]          ; <-- (22) `r1` にあるアドレスの値を `r0` に読み込む。
+     186:      	bic	r0, r0, #0x200000 ; <-- (22) `r0` の値と `0x200000` をビット反転した値のビット単位 AND を取り、その結果を `r0` に格納する
+     18a:      	str	r0, [r1]          ; <-- (22) `r0` の内容を、`r1` にあるアドレスが指すメモリに格納する
+     18c:      	ldr	r0, [r1]          ; <-- (25) `r1` にあるアドレスの値を `r0` に読み込む。
+     18e:      	bic	r0, r0, #0x80000  ; <-- (25) `r0` の値と `0x80000` をビット反転した値のビット単位 AND を取り、その結果を `r0` に格納する
+     192:      	str	r0, [r1]          ; <-- (25) `r0` の内容を、`r1` にあるアドレスが指すメモリに格納する
      194:      	b	0x196 <registers::__cortex_m_rt_main::h0b7888ca966441cf+0x36> @ imm = #-0x2
      196:      	b	0x196 <registers::__cortex_m_rt_main::h0b7888ca966441cf+0x36> @ imm = #-0x4
 [...]
 ```
 
-As you can see, the non-optimized assembly contains 4 loads, 4 stores, and 4 bit manipulation
-instructions.  Those correspond nicely with the code we wrote. Now, let's have a look at the
-optimized assembly.
+ご覧のとおり、非最適化アセンブリには 4 回のロード、4 回のストア、そして 4 つのビット操作
+命令があります。  これらは、私たちが書いたコードにきれいに対応しています。では、
+最適化されたアセンブリを見てみましょう。
 
 ```
 $ cat release.dump
@@ -74,34 +74,34 @@ $ cat release.dump
      160:      	push	{r7, lr}
      162:      	mov	r7, sp
      164:      	bl	0x17a <registers::init::h4390f1d4f8a071f7> @ imm = #0x12
-     168:      	movw	r0, #0x504          ; <-- Load lower half of `OUT` register address into register `r0`
-     16c:      	movt	r0, #0x5000         ; <-- Load upper half of `OUT` register address into register `r0`
-     170:      	ldr	r1, [r0]                ; <-- (?) Load value at the address in `r0` into `r1`.
-     172:      	bic	r1, r1, #0x280000       ; <-- (?) Bitwise AND the value in `r1` with bitwise complement of `0x280000`, and store in `r1`
-     176:      	str	r1, [r0]                ; <-- (?) Store contents of `r0` in memory at address from `r0`
+     168:      	movw	r0, #0x504          ; <-- `OUT` レジスタのアドレスの下位半分をレジスタ `r0` に読み込む
+     16c:      	movt	r0, #0x5000         ; <-- `OUT` レジスタのアドレスの上位半分をレジスタ `r0` に読み込む
+     170:      	ldr	r1, [r0]                ; <-- (?) `r0` にあるアドレスの値を `r1` に読み込む。
+     172:      	bic	r1, r1, #0x280000       ; <-- (?) `r1` の値と `0x280000` をビット反転した値のビット単位 AND を取り、その結果を `r1` に格納する
+     176:      	str	r1, [r0]                ; <-- (?) `r0` の内容を、`r0` にあるアドレスが指すメモリに格納する
      178:      	b	0x178 <registers::__cortex_m_rt_main::h1f38525e07b97485+0x18> @ imm = #-0x4
 [...]
 ```
 
-Huh? Just a single load - bit manipulate - store?  The state of the LEDs didn't change this time!
-The `str` instruction is the one that writes a value to the register. Our *debug* (unoptimized)
-program had four of them, one for each write to the register, but the *release* (optimized) program
-only has one.
+えっ？ ロード - ビット操作 - ストアが 1 回あるだけ？  今回は LED の状態が変わりませんでした！
+`str` 命令は、値をレジスタに書き込む命令です。*debug*（非最適化）
+プログラムにはそれが 4 回あり、レジスタへの各書き込みに 1 回ずつ対応していましたが、*release*（最適化）プログラム
+には 1 回しかありません。
 
-How do we prevent LLVM from misoptimizing our program? We use *volatile* operations instead of plain
-reads/writes (`examples/volatile.rs`):
+LLVM が私たちのプログラムを誤って最適化しないようにするにはどうすればよいでしょうか？ 通常の
+読み書きではなく *volatile* 操作を使います（`examples/volatile.rs`）：
 
 ``` rust
 {{#include examples/volatile.rs}}
 ```
 
-Let's run cargo objdump once again, with optimizations enabled.
+では、最適化を有効にして、もう一度 cargo objdump を実行しましょう。
 
 ```
 cargo objdump -q --release --example volatile -- --disassemble --no-show-raw-insn  > release.volatile.dump
 ```
 
-All right, now have a look at what's inside:
+では、中身を見てみましょう。
 
 ```
 $ cat release.volatile.dump
@@ -133,5 +133,5 @@ $ cat release.volatile.dump
 [...]
 ```
 
-Hey, look at that! Now we've got our four load - manipulate - store cycles back.
-Step through the code once again using GDB to see the volatile operations in action!
+おお、見てください！ これで 4 回のロード - 操作 - ストアのサイクルが戻ってきました。
+GDB を使ってもう一度コードをステップ実行し、volatile 操作が実際に動作する様子を確認してください！

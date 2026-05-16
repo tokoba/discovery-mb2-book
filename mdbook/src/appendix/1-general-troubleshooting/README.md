@@ -1,22 +1,21 @@
-# General troubleshooting
+# 一般的なトラブルシューティング
 
-## `cargo-embed` problems
+## `cargo-embed` の問題
 
-Most `cargo-embed` problems are related to not having installed the `udev` rules properly on
-Linux, so make sure you got that right.
+`cargo-embed` に関する問題のほとんどは、Linux で `udev` ルールが正しくインストールされていないことに関連しているため、その点が正しいことを確認してください。
 
-If you are stuck, you can open an issue in the [`discovery` issue tracker] or visit the [Rust
-Embedded matrix channel] or the [probe-rs matrix channel] and ask for help there.
+行き詰まった場合は、[`discovery` issue tracker] で issue を作成するか、[Rust
+Embedded matrix channel] または [probe-rs matrix channel] を訪れて、そこで助けを求めることができます。
 
 [`discovery` issue tracker]: https://github.com/rust-embedded/discovery-mb2/issues
 [Rust Embedded matrix channel]: https://matrix.to/#/#rust-embedded:matrix.org
 [probe-rs matrix channel]: https://matrix.to/#/#probe-rs:matrix.org
 
-## Cargo problems
+## Cargo の問題
 
-### "can't find crate for `core`"
+### 「`core` の crate が見つからない」
 
-*Symptoms:*
+*症状:*
 
 ```
    Compiling volatile-register v0.1.2
@@ -41,21 +40,21 @@ error: Could not compile `r0`.
 To learn more, run the command again with --verbose.
 ```
 
-*Cause:*
+*原因:*
 
-You forgot to install the proper target for your microcontroller `thumbv7em-none-eabihf`.
+マイクロコントローラー用の適切なターゲット `thumbv7em-none-eabihf` のインストールを忘れています。
 
-*Fix:*
+*修正:*
 
-Install the proper target.
+適切なターゲットをインストールしてください。
 
 ``` console
 $ rustup target add thumbv7em-none-eabihf
 ```
 
-### Unable to flash the device: `No loadable segments were found in the ELF file`
+### デバイスに書き込めない: `No loadable segments were found in the ELF file`
 
-*Symptoms:*
+*症状:*
 ```console
 > cargo embed
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.04s
@@ -65,16 +64,16 @@ $ rustup target add thumbv7em-none-eabihf
        Error No loadable segments were found in the ELF file.
 ```
 
-*Cause:*
+*原因:*
 
-Cargo needs to know how to build and link the program to the requirements of the target device.
-You therefore need to set the correct parameters in the `.cargo/config.toml` file.
+Cargo は、ターゲットデバイスの要件に合わせてプログラムをどのようにビルドし、リンクするかを把握する必要があります。
+そのため、`.cargo/config.toml` ファイルに正しいパラメーターを設定する必要があります。
 
-*Fix:*
+*修正:*
 
-Add a `.cargo/config.toml` file with the correct parameters:
+正しいパラメーターを含む `.cargo/config.toml` ファイルを追加してください:
 ```toml
 {{#include ../../05-meet-your-software/.cargo/config.toml}}
 ```
 
-See [Embedded Setup](../../05-meet-your-software/embedded-setup.md) for further details.
+詳細については、[Embedded Setup](../../05-meet-your-software/embedded-setup.md) を参照してください。

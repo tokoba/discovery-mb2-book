@@ -1,7 +1,6 @@
-# My solution
+# 私の解答
 
-Here's my solution (`src/main.rs`). Note that you can get quite high G values by rapping the edge of
-your MB2 on a table. Note also that this can break the accelerometer, so probably don't?
+こちらが私の解答（`src/main.rs`）です。MB2 の端をテーブルに打ち付けると、かなり高い G 値を得られることがあります。また、これで加速度センサーが壊れる可能性もあるので、たぶんやらないほうがよいでしょう。
 
 ``` rust
 {{#include src/main.rs}}

@@ -1,13 +1,9 @@
-# The challenge
+# 課題
 
-The challenge for this chapter is to build a small application that communicates with the outside
-world via the serial interface introduced in the last chapter. It should expect to receive the
-commands "mag" for magnetometer as well as "acc" for accelerometer from the serial port. It should
-then be able to send the corresponding sensor data to the serial port in response.
+この章の課題は、前の章で導入したシリアルインターフェイスを介して外部と通信する小さなアプリケーションを作成することです。シリアルポートから、磁力計を表すコマンド `"mag"` と加速度計を表すコマンド `"acc"` を受信することを想定します。その後、それに応じて対応するセンサーデータをシリアルポートへ送り返せるようにしてください。
 
-This time no template code will be provided since all you need is already provided in the
-[UART](../11-uart/index.html) and this chapter. However, here are a few clues:
+今回は、必要なものはすべて [UART](../11-uart/index.html) とこの章ですでに提供されているため、テンプレートコードは用意されていません。ただし、いくつかヒントがあります。
 
--   You might be interested in `core::str::from_utf8` to convert the bytes in the buffer to a `&str`, since we need to compare with `"mag"` and `"acc"`.
+-   バッファ内のバイト列を `&str` に変換するために `core::str::from_utf8` が役に立つかもしれません。`"mag"` および `"acc"` と比較する必要があるためです。
 
--   You will have to read the documentation for the magnetometer API and functionality. While the `lsm303agr` crate provides the API interface, the [LSM303AGR datasheet](https://www.st.com/resource/en/datasheet/lsm303agr.pdf) details the sensor's magnetic field measurement parameters. See pages 13-15 for sensor characteristics and, importantly, pages 66-67 for the output register format.
+-   磁力計 API とその機能に関するドキュメントを読む必要があります。`lsm303agr` クレートは API インターフェイスを提供しますが、[LSM303AGR datasheet](https://www.st.com/resource/en/datasheet/lsm303agr.pdf) には、このセンサーの磁場測定パラメータの詳細が記載されています。センサー特性については 13〜15 ページを、そして特に出力レジスタ形式については 66〜67 ページを参照してください。

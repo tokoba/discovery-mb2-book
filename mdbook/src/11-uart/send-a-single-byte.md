@@ -1,21 +1,16 @@
-# Send a single byte
+# 1バイトを送信する
 
-Our first task will be to send a single byte from the microcontroller to the computer over the
-serial connection.
+最初の課題は、シリアル接続を介してマイクロコントローラーからコンピューターへ1バイトを送信することです。
 
-In order to do that we will use the following snippet (this one is already in
-`11-uart/examples/send-byte.rs`):
+そのために、次のスニペットを使います（これはすでに `11-uart/examples/send-byte.rs` にあります）:
 
 ``` rust
 {{#include examples/send-byte.rs}}
 ```
 
-You might notice that one of the libraries used here, the `serial_setup` module, is not from
-`crates.io`, but was written for this project. The purpose of `serial_setup` is to provide a nice
-wrapper around the UARTE peripheral. If you want, you can check out what exactly the module does,
-but it is not required to understand this chapter in general.
+ここで使われているライブラリの1つである `serial_setup` モジュールは、`crates.io` 由来ではなく、このプロジェクトのために書かれたものだと気づくかもしれません。`serial_setup` の目的は、UARTE ペリフェラルを扱いやすくラップすることです。必要なら、このモジュールが具体的に何をしているのか確認しても構いませんが、この章全体を理解するうえでは必須ではありません。
 
-We'll next discuss the initialization of UARTE. The UARTE is initialized with this piece of code:
+次に、UARTE の初期化について説明します。UARTE は次のコードで初期化します:
 
 ```rs
 uarte::Uarte::new(
@@ -26,37 +21,21 @@ uarte::Uarte::new(
 );
 ```
 
-This function takes ownership of the UARTE peripheral representation in Rust (`board.UARTE0`) and
-the TX/RX pins on the board (`board.uart.into()`) so nobody else can mess with either the UARTE
-peripheral or our pins while we are using them. After that we pass two configuration options to the
-constructor: the baud rate (that one should be familiar) as well as an option called
-"parity". Parity is a way to allow serial communication lines to check whether the data they
-received was corrupted during transmission. We don't want to use that here so we simply exclude it.
-Then we wrap it up in the `UartePort` type so we can use it.
+この関数は、Rust における UARTE ペリフェラルの表現 (`board.UARTE0`) と、ボード上の TX/RX ピン (`board.uart.into()`) の所有権を受け取ります。これにより、それらを使用している間は、ほかの誰も UARTE ペリフェラルやピンを勝手に触れなくなります。その後、コンストラクタに2つの設定オプションを渡します。ボーレート（これはもうおなじみでしょう）と、「パリティ」と呼ばれるオプションです。パリティは、シリアル通信回線が受信したデータが伝送中に破損していないかを確認できるようにする仕組みです。ここではそれを使いたくないので、単に除外します。その後、使えるようにそれを `UartePort` 型でラップします。
 
-After the initialization, we send our `X` (as ASCII byte value 88) via the newly created uart
-instance. These serial functions are "blocking": they wait for the data to be sent before
-returning. This is not always what is wanted: the microcontroller can do a lot of work while
-waiting for the byte to go out on the wire. However, in our case it is convenient and we didn't
-have other work to do anyway.
+初期化の後、新しく作成した UART インスタンス経由で `X`（ASCII のバイト値 88）を送信します。これらのシリアル関数は「ブロッキング」です。データが送信されるまで待ってから戻ります。これは常に望ましいとは限りません。マイクロコントローラーは、バイトが線上に送出されるのを待っている間にも多くの処理を行えるからです。しかし、この場合はそのほうが都合がよく、そもそもほかにやる作業もありませんでした。
 
-Last but not least, we `flush()` the serial port. This is because the UARTE may decide to buffer
-output until it has received a certain number of bytes to send.  Calling `flush()` forces it to
-write the bytes it currently has right now instead of waiting for more.
+最後に、`flush()` でシリアルポートをフラッシュします。これは、UARTE が送信するバイト数がある程度たまるまで出力をバッファリングする可能性があるためです。`flush()` を呼び出すと、さらに待つのではなく、その時点で保持しているバイトをすぐに書き出すよう強制できます。
 
-## Testing it
+## テストする
 
-Before flashing this you should make sure to start your minicom/PuTTY as the data we receive via
-our serial communication is not backed up or anything: we have to view it live. Once your serial
-monitor is up you can flash the program just like in chapter 5:
+これをフラッシュする前に、必ず minicom/PuTTY を起動しておいてください。シリアル通信で受信したデータは保存されたりしないので、その場で確認する必要があります。シリアルモニターの準備ができたら、第5章と同じようにプログラムを書き込めます:
 
 ```
 $ cargo embed --example send-byte
   (...)
 ```
 
-And after the flashing is finished, you should see the character `X` show up on your minicom/PuTTY
-terminal, congrats!
+書き込みが終わると、minicom/PuTTY の端末に文字 `X` が表示されるはずです。おめでとうございます！
 
-If you missed it, you can hit the reset button on the back of the MB2. This will cause the program
-to start from the beginning and send an `X` again.
+見逃した場合は、MB2 の背面にあるリセットボタンを押してください。するとプログラムが最初から開始され、再び `X` を送信します。

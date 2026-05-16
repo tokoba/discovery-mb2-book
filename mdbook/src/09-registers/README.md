@@ -1,47 +1,46 @@
-# Registers
+# レジスタ
 
-This chapter is a technical deep-dive. You can safely [skip it] for now and come back to it later if
-you like. That said, there's a lot of good stuff in here, so I'd recommend you dive in.
+この章は技術的な深掘りです。今のところは安全に[読み飛ばして]、あとで好きなときに戻ってきてもかまいません。
+とはいえ、ここには良い内容がたくさんあるので、ぜひ掘り下げてみることをおすすめします。
 
-[skip it]: ../10-serial-port/index.html
+[読み飛ばして]: ../10-serial-port/index.html
 
 -----
 
-It's time to explore what calling `display_pins.row1.set_high()` or `button_a_pin.is_high()` does under the hood.
+`display_pins.row1.set_high()` や `button_a_pin.is_high()` を呼び出すと、その裏側で何が起きているのかを探っていきましょう。
 
-In a nutshell, calling `display_pins.row1.set_high()` just writes to some special memory regions. Go into the `09-registers` directory
-and let's run the starter code statement by statement (`src/main.rs`).
+一言で言えば、`display_pins.row1.set_high()` の呼び出しは、いくつかの特別なメモリ領域に書き込むだけです。`09-registers` ディレクトリに移動し、
+スターターコードを文ごとに実行してみましょう（`src/main.rs`）。
 
 ``` rust
 {{#include src/main.rs}}
 ```
 
-What's this magic?
+この魔法は何なのでしょうか？
 
-The address `0x50000504` points to a *register*. A register is a special region of memory that
-controls a *peripheral*. A peripheral is a piece of electronics that sits right next to the
-processor within the microcontroller package and provides the processor with extra functionality.
-After all, the processor, on its own, can only do math and logic.
+アドレス `0x50000504` は *レジスタ* を指しています。レジスタとは、*ペリフェラル* を制御する特別なメモリ領域です。ペリフェラルとは、
+マイクロコントローラのパッケージ内でプロセッサのすぐ隣にある電子回路の一部で、プロセッサに追加の機能を提供します。
+結局のところ、プロセッサは単体では演算と論理処理しかできません。
 
-This particular register controls General Purpose Input/Output (GPIO) *pins* (GPIO *is* a
-peripheral) and can be used to *drive* each of those pins
-*low* or *high*. 
+この特定のレジスタは General Purpose Input/Output（GPIO）*ピン* を制御します（GPIO *は*
+ペリフェラルです）。そして、それらの各ピンを *low* または *high* に
+*駆動* するために使用できます。
 
-(On the nRF52833 there are more than 32
-GPIOs, yet the CPU is 32-bit. Thus, the GPIO
-pins are organized in two groups "P0" and "P1", with a set of registers
-for reading, writing and configuring each group. The address
-above is the address of the output register for the P0 pins.)
+（nRF52833 には 32 本を超える
+GPIO がありますが、CPU は 32 ビットです。そのため、GPIO
+ピンは "P0" と "P1" の 2 つのグループに整理されており、各グループごとに
+読み取り、書き込み、設定のためのレジスタ群があります。上のアドレスは
+P0 ピン用の出力レジスタのアドレスです。）
 
-## An aside: LEDs, digital outputs and voltage levels
+## 余談: LED、デジタル出力、電圧レベル
 
-Drive? Pin? Low? High?
+駆動？ ピン？ Low？ High？
 
-A pin is a electrical contact. Our microcontroller has several of them and some of them are
-connected to Light Emitting Diodes (LEDs). An LED will emit light when voltage is applied to it.  As
-the name implies, an LED also acts as a "diode". A diode will only let electricity flow in one
-direction. Hook an LED up "forwards" and light comes out. Hook it up "backwards" and nothing
-happens.
+ピンとは電気的な接点です。私たちのマイクロコントローラにはそのような接点がいくつもあり、その一部は
+発光ダイオード（LED）に接続されています。LED は電圧が加わると発光します。名前が示すとおり、
+LED は「ダイオード」としても振る舞います。ダイオードは電気を一方向にしか流しません。
+LED を「正方向」に接続すると光ります。「逆方向」に接続しても何も
+起こりません。
 
 <a href="https://commons.wikimedia.org/wiki/File:LED_circuit.svg">
 <p align="center">
@@ -49,17 +48,17 @@ happens.
 </p>
 </a>
 
-Luckily for us, the microcontroller's pins are connected such that we can drive the LEDs the right
-way round. All that we have to do is apply enough voltage across the pins to turn the LED on. The
-pins attached to the LEDs are normally configured as *digital outputs* and can output two different
-voltage levels: "low", 0 Volts, or "high", 3 Volts. A "high" (voltage) level will turn the LED on
-whereas a "low" (voltage) level will turn it off.
+幸いなことに、マイクロコントローラのピンは、LED を正しい向きで駆動できるように接続されています。
+やるべきことは、LED を点灯させるのに十分な電圧をピン間に加えることだけです。LED に接続された
+ピンは通常、*デジタル出力* として設定されており、2 種類の異なる
+電圧レベルを出力できます。"low"、0 ボルト、または "high"、3 ボルトです。"high" の（電圧）レベルは LED を点灯させ、
+"low" の（電圧）レベルは消灯させます。
 
-These "low" and "high" states map directly to the concept of digital logic. "low" is `0` or `false`
-and "high" is `1` or `true`. This is why this pin configuration is known as digital output.
+これらの "low" と "high" の状態は、デジタル論理の概念に直接対応します。"low" は `0` または `false` であり、
+"high" は `1` または `true` です。これが、このピン設定がデジタル出力として知られている理由です。
 
-The opposite of a digital output is a digital input.  In the same way that a digital output can be either `0` or `1`, a digital input can be either `0` or `1`.  The difference is that digital outputs can drive a voltages, but digital inputs *read* a voltage.  When the microcontroller reads a voltage level above a high threshold, it will interpret that as a `1` and when it reads a voltage level below a low threshold, it will interpret that as a `0`. 
+デジタル出力の反対はデジタル入力です。デジタル出力が `0` または `1` のどちらかを取り得るのと同じように、デジタル入力も `0` または `1` のどちらかです。違いは、デジタル出力は電圧を駆動できますが、デジタル入力は電圧を *読み取る* ことです。マイクロコントローラが高しきい値を超える電圧レベルを読み取ると、それを `1` と解釈し、低しきい値を下回る電圧レベルを読み取ると、それを `0` と解釈します。
 
 -----
 
-OK. But how can one find out what this register does? Time to RTRM (Read the Reference Manual)!
+OK。では、このレジスタが何をするのかは、どうすれば分かるのでしょうか？ RTRM（Read the Reference Manual）の時間です！

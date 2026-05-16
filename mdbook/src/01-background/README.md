@@ -1,102 +1,100 @@
-# Background
+# 背景
 
-You are about to write "bare-metal" Rust for a microcontroller. Maybe you have never done anything
-like this before. That's *fantastic* — welcome to an awesome adventure!
+あなたはこれから、マイクロコントローラ向けに「ベアメタル」Rustを書こうとしています。もしかすると、これまでにこのようなことをした
+ことは一度もないかもしれません。それは *素晴らしいこと* です — すばらしい冒険へようこそ！
 
-We should start by answering some basic questions you might have.
+まずは、あなたが抱いているかもしれない基本的な疑問に答えることから始めましょう。
 
-* **What's a microcontroller?**
+* **マイクロコントローラとは何ですか？**
 
-  A microcontroller is a *system* on a chip. Whereas your computer is made up of several discrete
-  components: a processor, RAM, storage, an Ethernet port, etc.; a microcontroller has all those types
-  of components built into a single "chip" or package. This makes it possible to build systems with
-  fewer parts.
+  マイクロコントローラは、1つのチップ上に実装された *システム* です。あなたのコンピュータが、プロセッサ、RAM、
+  ストレージ、Ethernetポートなどの複数の個別のコンポーネントで構成されているのに対し、マイクロコントローラはそれら
+  すべての種類のコンポーネントを単一の「チップ」またはパッケージに内蔵しています。これにより、より少ない部品で
+  システムを構築できます。
 
-* **What can you do with a microcontroller?**
+* **マイクロコントローラで何ができますか？**
 
-  Lots of things! Microcontrollers are the central part of what are known as "*embedded* systems".
-  Embedded systems are everywhere, but you don't usually notice them. They control the machines that
-  wash your clothes, print your documents, and cook your food. Embedded systems keep the buildings
-  that you live and work in at a comfortable temperature, and control the components that make the
-  vehicles you travel in stop and go.
+  たくさんあります！ マイクロコントローラは、「*組み込み*システム」として知られるものの中核です。
+  組み込みシステムはいたるところにありますが、普段それと意識することはあまりありません。組み込みシステムは、
+  あなたの衣類を洗い、文書を印刷し、食べ物を調理する機械を制御しています。組み込みシステムは、あなたが暮らし、
+  働く建物を快適な温度に保ち、あなたが移動に使う車両を停止・走行させる部品も制御しています。
 
-  Most embedded systems operate without user intervention. Even if they expose a user interface like a
-  washing machine does; most of their operation is done on their own.
+  ほとんどの組み込みシステムは、ユーザーの介入なしに動作します。洗濯機のようにユーザーインターフェースを
+  備えている場合であっても、その動作の大部分は自律的に行われます。
 
-  Embedded systems are often used to *control* a physical process. To make this possible, they have
-  one or more devices to tell them about the state of the world ("sensors"), and one or more
-  devices which allow them to change things ("actuators"). For example, a building climate control
-  system might have:
+  組み込みシステムは、物理的なプロセスを *制御* するために使われることがよくあります。これを可能にするために、
+  外界の状態を知らせる1つ以上のデバイス（「センサー」）と、物事を変化させることを可能にする1つ以上の
+  デバイス（「アクチュエータ」）を備えています。たとえば、建物の空調制御システムには次のようなものがあります:
 
-    - Sensors which measure temperature and humidity in various locations.
-    - Actuators which control the speed of fans.
-    - Actuators which cause heat to be added or removed from the building.
+    - さまざまな場所の温度と湿度を測定するセンサー。
+    - ファンの速度を制御するアクチュエータ。
+    - 建物に熱を加えたり取り除いたりするアクチュエータ。
 
-* **When should I use a microcontroller?**
+* **どのような場合にマイクロコントローラを使うべきですか？**
 
-  Many of the embedded systems listed above could be implemented with a computer running Linux (for
-  example a "Raspberry Pi"). Why use a microcontroller instead? Sounds like it might be harder to
-  develop a program.
+  上に挙げた組み込みシステムの多くは、Linuxを実行するコンピュータ（たとえば「Raspberry Pi」）で
+  実装することもできます。それなのになぜ、代わりにマイクロコントローラを使うのでしょうか？ プログラムの
+  開発はむしろ難しそうに思えます。
 
-  Some reasons might include:
+  理由としては、次のようなものがあります:
 
-    * *Cost:* A microcontroller is much cheaper than a general purpose computer. Not only is the
-      microcontroller cheaper; it also requires many fewer external electrical components to operate.
-      This makes Printed Circuit Boards (PCB) smaller and cheaper to design and manufacture.
+    * *コスト:* マイクロコントローラは、汎用コンピュータよりもはるかに安価です。マイクロコントローラ
+      自体が安いだけでなく、動作に必要な外付けの電気部品もずっと少なくて済みます。
+      そのため、プリント基板（PCB）はより小さくなり、設計や製造のコストも下がります。
 
-    * *Power consumption:* Most microcontrollers consume a fraction of the power of a full blown
-      processor. For applications which run on batteries, that makes a huge difference.
+    * *消費電力:* ほとんどのマイクロコントローラが消費する電力は、本格的なプロセッサのごく一部です。
+      バッテリーで動作するアプリケーションでは、これは非常に大きな違いになります。
 
-    * *Responsiveness:* To accomplish their purpose, some embedded systems must always react within a
-      limited time interval (e.g. the "anti-lock" braking system of a car). If the system misses this
-      type of *deadline*, a catastrophic failure might occur. Such a deadline is called a "hard real
-      time" requirement. An embedded system which is bound by such a deadline is referred to as a "hard
-      real-time system". A general purpose computer and OS usually has many software components which
-      share the computer's processing resources. This makes it harder to guarantee execution of a
-      program within tight time constraints.
+    * *応答性:* その目的を果たすために、一部の組み込みシステムは常に限られた時間内に反応しなければ
+      なりません（たとえば、自動車の「アンチロック」ブレーキシステム）。システムがこの種の *デッドライン* に
+      間に合わないと、壊滅的な障害が発生する可能性があります。このようなデッドラインは「ハードリアル
+      タイム」要件と呼ばれます。そのようなデッドラインに拘束される組み込みシステムは、「ハード
+      リアルタイムシステム」と呼ばれます。汎用コンピュータとOSには通常、多数のソフトウェアコンポーネントがあり、
+      コンピュータの処理リソースを共有しています。そのため、厳しい時間制約の中でプログラムの実行を
+      保証することが難しくなります。
 
-    * *Reliability.* In systems with fewer components (both hardware and software), there is less to go
-      wrong!
+    * *信頼性:* ハードウェアとソフトウェアの両方で構成要素が少ないシステムでは、問題が起きる要素も
+      それだけ少なくなります！
 
-* **When should I *not* use a microcontroller?**
+* **どのような場合にマイクロコントローラを使うべき*ではない*ですか？**
 
-  Microcontrollers are often not great at heavy computational work. To keep their cost and power
-  consumption low, microcontrollers have limited computational resources available to them.
+  マイクロコントローラは、重い計算処理を行うのが得意でないことがよくあります。コストと消費電力を
+  低く抑えるために、マイクロコントローラで利用できる計算資源は限られています。
 
-  Microcontrollers can typically execute fewer instructions per second than "big" processors. The
-  slowest parts might run at "only" a few million instructions per second. In addition, the amount of
-  work per instruction is typically lower. Microcontroller parts are typically "32 bit", but "16 bit"
-  parts are not uncommon: this may mean more instructions to work with typical Rust datatypes. Most
-  microcontrollers have no or little "cache", meaning instructions can run only as fast as main memory
-  can be accessed.
+  マイクロコントローラは通常、「大きな」プロセッサよりも1秒あたりに実行できる命令数が少なくなります。最も低速
+  なものでは、1秒あたり「たった」数百万命令しか実行できない場合もあります。さらに、1命令あたりの
+  仕事量も一般に少なめです。マイクロコントローラは通常「32ビット」ですが、「16ビット」の
+  ものも珍しくなく、これは典型的なRustのデータ型を扱うためにより多くの命令が必要になることを意味する場合があります。ほとんどの
+  マイクロコントローラには「キャッシュ」がないか、あってもわずかであるため、命令は主記憶にアクセス
+  できる速度でしか実行できません。
 
-  Some microcontrollers don't have hardware support for floating point operations. On those
-  devices, performing a simple addition of single precision numbers can take hundreds of CPU cycles.
+  一部のマイクロコントローラには、浮動小数点演算のためのハードウェアサポートがありません。そのような
+  デバイスでは、単精度数の単純な加算ですら数百CPUサイクルかかることがあります。
 
-  Finally, microcontrollers typically come with limited memory. Memory sizes may be as small as 16KB
-  for program instructions and 4KB for data, making programming for these systems quite challenging.
-  While the internal memory size per unit cost and power consumption is constantly increasing, the
-  processor we will work with still has "only" 512KB for program instructions and 256KB for data — far
-  less than that of a "real computer".
+  最後に、マイクロコントローラには通常、限られたメモリしかありません。メモリ容量は、プログラム命令用に16KB、
+  データ用に4KBしかないこともあり、この種のシステム向けプログラミングはかなり難しくなります。
+  単位コストおよび消費電力あたりの内部メモリ容量は絶えず増加していますが、これから扱う
+  プロセッサでも、プログラム命令用が「わずか」512KB、データ用が256KBしかありません — それでも
+  「本物のコンピュータ」に比べればはるかに少ないのです。
 
-* **Why use Rust and not C?**
+* **なぜCではなくRustを使うのですか？**
 
-  Hopefully, I don't need to convince you here as you are probably familiar with the language
-  differences between Rust and C. One point I do want to bring up is package management. C lacks an
-  official, widely accepted package management solution whereas Rust has Cargo. This makes development
-  *much* easier. And, IMO, easy package management encourages code reuse because libraries can be
-  easily integrated into an application which is also a good thing as libraries get more "battle
-  testing".
+  おそらくここで私があなたを説得する必要はないでしょう。RustとCの言語としての
+  違いには、すでによく馴染みがあるはずだからです。ただし、ぜひ触れておきたい点が1つあります。それはパッケージ管理です。Cには
+  公式で広く受け入れられたパッケージ管理ソリューションがありませんが、RustにはCargoがあります。これにより、開発は
+  *はるかに* 容易になります。そして、IMO、簡単なパッケージ管理はコードの再利用を促進します。ライブラリを
+  アプリケーションへ容易に統合できるからです。これは、ライブラリがより多くの「実運用での
+  テスト」を受けることにもつながるため、良いことでもあります。
 
-* **Why should I not use Rust?**
+* **なぜRustを使うべきではないのでしょうか？**
 
-  Or why should I prefer C over Rust?
+  あるいは、なぜRustよりもCを選ぶべきなのでしょうか？
 
-  The C ecosystem is more mature. Off-the-shelf solutions for several problems already exist. If you
-  need to control a time sensitive process, you can grab one of the existing commercial Real Time
-  Operating Systems (RTOS) out there and solve your problem. There are no commercial, production-grade
-  RTOSes in Rust (as of this writing) so you would have to either create one yourself or try one of
-  the ones that are in development. You can find a list of those in the [Awesome Embedded Rust]
-  repository.
+  Cのエコシステムはより成熟しています。いくつかの問題に対しては、既製のソリューションがすでに存在します。厳密な
+  タイミングが求められるプロセスを制御する必要があるなら、既存の商用リアルタイム
+  オペレーティングシステム（RTOS）のどれかを使って問題を解決できます。Rustには商用の本番運用レベルの
+  RTOSは存在しないため（本稿執筆時点）、自分で1つ作るか、開発中のものを試すかのどちらかになります。
+  それらの一覧は [Awesome Embedded Rust]
+  リポジトリにあります。
 
 [Awesome Embedded Rust]: https://github.com/rust-embedded/awesome-embedded-rust#real-time-operating-system-rtos

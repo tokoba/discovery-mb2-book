@@ -1,109 +1,111 @@
 # `micro::bit v2 Embedded Discovery Book`
 
-The published text of this book is at
-<https://docs.rust-embedded.org/discovery-mb2> for your
-perusing pleasure.
+この本の公開版テキストは
+<https://docs.rust-embedded.org/discovery-mb2> にありますので、
+どうぞご覧ください。
 
 -----
 
-Discover the world of microcontrollers through
-[Rust](https://www.rust-lang.org/)! This book provides an
-introduction to microcontrollers and how to use Rust with
-them.
+[Rust](https://www.rust-lang.org/) を通して
+マイクロコントローラーの世界を探検しましょう！ この本では、
+マイクロコントローラーの基礎と、それらで Rust を使う方法を
+紹介します。
 
-## Book Versions
+## 本書のバージョン
 
-This book is the current and best-maintained version of the
-Rust Embedded Discovery Book. It is intended to be used with
-the [BBC Micro:Bit v2](https://microbit.org/new-microbit/)
-(MB2) development circuit board.
+この本は、Rust Embedded Discovery Book の現行版であり、
+最もよくメンテナンスされているバージョンです。これは
+[BBC Micro:Bit v2](https://microbit.org/new-microbit/)
+(MB2) 開発ボードと一緒に使うことを想定しています。
 
-(There are currently two *deprecated* older versions of this
-book. [One
-version](https://docs.rust-embedded.org/discovery/f3discovery)
-is based on the [STM F3
+(現在、この本には 2 つの *非推奨* の古いバージョンが
+あります。[1 つ目の
+バージョン](https://docs.rust-embedded.org/discovery/f3discovery)
+は [STM F3
 Discovery](https://www.st.com/en/evaluation-tools/stm32f3discovery.html)
-development board.  The [second
-version](https://docs.rust-embedded.org/discovery/microbit)
-is slightly newer and is based on the [BBC Micro:Bit
+開発ボードをベースにしています。 [2 つ目の
+バージョン](https://docs.rust-embedded.org/discovery/microbit)
+はそれより少し新しく、[BBC Micro:Bit
 v1](https://microbit.org/get-started/features/overview/#original-micro:bit)
-and v2 circuit boards.  Unless you are determined to work
-with older and less-well-supported hardware, and
-corresponding older and less-well-supported books, we
-recommend getting an MB2 and using this book instead. The
-MB2 is available for about US$20 from many online
-suppliers.)
+および v2 ボードをベースにしています。 古く、サポートも
+手薄なハードウェアと、それに対応する同様に古くサポートの
+手薄な本で作業したいと強く考えているのでなければ、代わりに
+MB2 を入手してこの本を使うことをお勧めします。MB2 は
+多くのオンライン販売店で約 US$20 で入手できます。)
 
-## What Do You Want To Do?
+## 何をしたいですか？
 
-Here's some ways to get started:
+始めるには、次のような方法があります:
 
-- Work through [this
-  book](https://docs.rust-embedded.org/discovery-mb2) with
-  an MB2
-- Start working on the examples from this repository
-- You've got questions?
-    - Have a look at our [discussions section on
-      GitHub](https://github.com/rust-embedded/discovery-mb2/discussions)
-    - Maybe it has already been answered
-    - If not, start a new discussion
-- You've found an issue?
-    - Have a look at our [issues on
-      GitHub](https://github.com/rust-embedded/discovery-mb2/issues)
-    - Maybe there is already a workaround
-    - If not, please open a new one - or even better - a [pull
-      request](https://github.com/rust-embedded/discovery-mb2/pulls) for solving
-      it
-- You want to talk to a human being directly?
-    - The general Rust [Embedded Matrix
+- MB2 を使って [この
+  本](https://docs.rust-embedded.org/discovery-mb2) を
+  読み進める
+- このリポジトリのサンプルに取り組み始める
+- 質問がありますか？
+    - [GitHub の
+      discussions セクション](https://github.com/rust-embedded/discovery-mb2/discussions)
+      を見てみてください
+    - すでに回答されているかもしれません
+    - まだなければ、新しい discussion を始めてください
+- 問題を見つけましたか？
+    - [GitHub の
+      issues](https://github.com/rust-embedded/discovery-mb2/issues)
+      を見てみてください
+    - すでに回避策があるかもしれません
+    - まだなければ、新しい issue を作成してください。さらに
+      よいのは、それを解決するための [pull
+      request](https://github.com/rust-embedded/discovery-mb2/pulls) を送ることです
+- 誰かと直接話したいですか？
+    - 一般向けの Rust [Embedded Matrix
       chat](https://matrix.to/#/#rust-embedded:matrix.org)
-      is good for questions beyond the basics. Please be
-      respectful of the bandwidth of folks there, though:
-      it's a busy place
+      は、基本を超えた質問に向いています。ただし、そこに
+      いる人たちの余力には配慮してください。とても
+      忙しい場所です
 
-Have fun and enjoy!
+楽しんでください！
 
-This project is developed and maintained by the [Resources team][team].
+このプロジェクトは [Resources team][team] によって開発・保守されています。
 
-## Licenses and Attribution
+## ライセンスと帰属表示
 
-The documentation is licensed under "Creative Commons
-CC-BY-4.0" and the source code is licensed under licensee's
-choice of the "Apache License" or the "MIT License".
+ドキュメントは「Creative Commons
+CC-BY-4.0」の下でライセンスされており、ソースコードは
+「Apache License」または「MIT License」のいずれかを
+選択する条件でライセンスされています。
 
-See the book's [Licenses and
-Attribution](mdbook/src/appendix/4-licenses-and-attribution)
-section for license details.
+ライセンスの詳細については、本書の [ライセンスと
+帰属表示](mdbook/src/appendix/4-licenses-and-attribution)
+セクションを参照してください。
 
-### Contribution
+### 貢献
 
-Unless you explicitly state otherwise, any contribution
-intentionally submitted for inclusion in the work by you, as
-defined in the Apache-2.0 license, shall be licensed as
-above, without any additional terms or conditions.
+あなたが明示的に別段の意思を示さない限り、Apache-2.0
+ライセンスで定義されるとおり、あなたが本作へ含める目的で
+意図的に提出したいかなる貢献も、追加の条項または条件なしに、
+上記の条件でライセンスされるものとします。
 
-## Code of Conduct
+## 行動規範
 
-Contribution to this crate is organized under the terms of
-the [Rust Code of Conduct][CoC], the maintainer of this
-crate, the [Resources team][team], promises to intervene to
-uphold that code of conduct.
+この crate への貢献は
+[Rust Code of Conduct][CoC] の条件に従って行われます。この
+crate のメンテナーである [Resources team][team] は、この
+行動規範を維持するために介入することを約束します。
 
 [CoC]: CODE_OF_CONDUCT.md
 [team]: https://github.com/rust-embedded/wg#the-resources-team
 
-## Translations
+## 翻訳
 
-We are extremely grateful to those who have provided
-translations of this book: more are welcome.
+この本の翻訳を提供してくださった方々に、私たちは深く感謝して
+います。さらに多くの翻訳も歓迎します。
 
-Note that these translations are of the older versions
-referenced above, and may not be monitored for accuracy or
-currency.
+これらの翻訳は上で触れた古いバージョンのものであり、
+正確性や最新性について確認されていない可能性がある点に
+注意してください。
 
-* [Japanese](https://tomoyuki-nakabayashi.github.io/discovery/)
-  ([repository](https://github.com/tomoyuki-nakabayashi/discovery))
-* [Chinese](https://jzow.github.io/discovery/)
-  ([repository](https://github.com/jzow/discovery))
-* [Portuguese (Brazilian)](https://allyssan.github.io/discovery/)
-  ([repository](https://github.com/allyssan/discovery))
+* [日本語](https://tomoyuki-nakabayashi.github.io/discovery/)
+  ([リポジトリ](https://github.com/tomoyuki-nakabayashi/discovery))
+* [中国語](https://jzow.github.io/discovery/)
+  ([リポジトリ](https://github.com/jzow/discovery))
+* [ポルトガル語（ブラジル）](https://allyssan.github.io/discovery/)
+  ([リポジトリ](https://github.com/allyssan/discovery))

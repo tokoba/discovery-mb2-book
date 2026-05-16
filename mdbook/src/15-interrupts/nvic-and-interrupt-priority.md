@@ -1,74 +1,42 @@
-## NVIC and Interrupt Priority
+## NVIC と割り込み優先度
 
-We've seen that interrupts make our processor immediately jump to another function in the code, but
-what's going on behind the scenes to allow this to happen? In this section we'll cover some
-technical details that won't be necessary for the rest of the book, so feel free to skip ahead if
-you're not interested.
+これまで見てきたように、割り込みによってプロセッサはコード内の別の関数へ即座にジャンプできます。では、これを可能にしている背後では何が起きているのでしょうか？ この節では、本書の残りを読むうえでは必須ではない技術的な詳細をいくつか扱いますので、興味がなければ先へ進んでも構いません。
 
-### The Interrupt Controller
+### 割り込みコントローラ
 
-Interrupts allow the processor to respond to peripheral events such as a GPIO input pin changing
-state, a timer completing its cycle, or a UART receiving a new byte. The peripheral contains
-circuitry that notices the event and informs a dedicated interrupt-handling peripheral. On Arm
-processors, the interrupt-handling peripheral is called the NVIC — the Nested Vector Interrupt
-Controller.
+割り込みによって、プロセッサは GPIO 入力ピンの状態変化、タイマーの周期完了、UART が新しいバイトを受信したことなどのペリフェラルイベントに応答できます。ペリフェラルには、そのイベントを検知して専用の割り込み処理用ペリフェラルに通知する回路が含まれています。Arm プロセッサでは、この割り込み処理用ペリフェラルは NVIC — Nested Vector Interrupt Controller と呼ばれます。
 
-> **NOTE** On other microcontroller architectures such as RISC-V the names and details discussed
-> here will differ, but the underlying principles are generally very similar.
+> **注記** RISC-V のような他のマイクロコントローラアーキテクチャでは、ここで説明する名前や詳細は異なりますが、根底にある原理は一般的によく似ています。
 
-The NVIC can receive requests to trigger an interrupt from many peripherals. It's even common for a
-peripheral to have multiple possible interrupts, for example a GPIO port having an interrupt for
-each pin, or a UART having both a "data received" and "data finished transmission" interrupt. The
-job of the NVIC is to prioritize these interrupts, remember which ones still need to be processed,
-and then cause the processor to run the relevant interrupt handler code.
+NVIC は、多くのペリフェラルから割り込み発生要求を受け取れます。1 つのペリフェラルに複数の割り込み候補があることも一般的で、たとえば GPIO ポートが各ピンごとの割り込みを持っていたり、UART が「データ受信」と「データ送信完了」の両方の割り込みを持っていたりします。NVIC の役割は、これらの割り込みに優先順位を付け、どの割り込みがまだ処理待ちかを記憶し、そのうえで関連する割り込みハンドラコードをプロセッサに実行させることです。
 
-### Interrupt Priorities
+### 割り込み優先度
 
-The NVIC has a settable "priority" for each interrupt. Depending on its configuration, the NVIC can ensure the current interrupt is fully processed before a new one is executed, or it can "preempt" the processor in the middle of one interrupt in order to handle another that's higher priority.
+NVIC には、各割り込みに対して設定可能な「優先度」があります。設定によっては、NVIC は新しい割り込みを実行する前に現在の割り込みが完全に処理されることを保証できますし、より高い優先度の別の割り込みを処理するために、ある割り込みの途中でプロセッサを「プリエンプト」することもできます。
 
-Preemption allows processors to respond very quickly to critical events.  For example, a robot controller might use low-priority interrupts to manage sending status information to the operator, but also take a high-priority interrupt when a sensor detects an imminent collision so that it can immediately stop moving the motors. You wouldn't want the robot to wait until it had finished sending a data packet to get around to stopping!
+プリエンプションにより、プロセッサは重大なイベントに非常に素早く応答できます。たとえば、ロボットコントローラでは、低優先度の割り込みを使ってオペレータへのステータス情報送信を管理しつつ、センサーが差し迫った衝突を検知したときには高優先度の割り込みを受けて、モーターを即座に停止できるようにするかもしれません。停止する前にデータパケットの送信が終わるまでロボットが待つようでは困ります！
 
-If an equal-priority or lower-priority interrupt occurs during an ISR, it will be "pended": the NVIC will remember the new interrupt and run its ISR sometime after the current ISR completes.  When an ISR function returns the NVIC looks to see if, while the ISR was running, other interrupts have happened that need to be handled. If so, the NVIC checks the interrupt table and calls the highest-priority ISR vectored there. Otherwise, the CPU returns to the running program.
+同一優先度またはそれより低い優先度の割り込みが ISR の実行中に発生した場合、その割り込みは「保留」されます。つまり、NVIC はその新しい割り込みを記憶し、現在の ISR が完了した後のどこかの時点でその ISR を実行します。ISR 関数が戻ると、NVIC は ISR の実行中に処理が必要な他の割り込みが発生していないかを確認します。もしあれば、NVIC は割り込みテーブルを確認し、そこにベクタリングされている最優先の ISR を呼び出します。そうでなければ、CPU は実行中だったプログラムに戻ります。
 
-Note that if interrupts are disabled entirely, all incoming interrupts will be pended. Pending interrupts will be handled once interrupts are enabled again.
+割り込みが完全に無効化されている場合、入ってくるすべての割り込みは保留されることに注意してください。保留中の割り込みは、割り込みが再び有効になった時点で処理されます。
 
-In embedded Rust, we can program the NVIC using the [`cortex-m`] crate, which provides methods to
-enable and disable (called `unmask` and `mask`) interrupts, set interrupt priorities, and trigger
-interrupts from software. Frameworks such as [RTIC] can handle NVIC configuration for you, taking
-advantage of the NVIC's flexibility to provide convenient resource sharing and task management.
+組み込み Rust では、[`cortex-m`] crate を使って NVIC をプログラムできます。この crate は、割り込みの有効化と無効化（`unmask` と `mask` と呼ばれます）、割り込み優先度の設定、ソフトウェアからの割り込み発生を行うメソッドを提供します。[RTIC] のようなフレームワークは NVIC の設定を代行でき、NVIC の柔軟性を活用して、便利なリソース共有やタスク管理を提供します。
 
-You can read more information about the NVIC in [Arm's documentation].
+NVIC についての詳細は [Arm's documentation] で読むことができます。
 
 [`cortex-m`]: https://docs.rs/cortex-m/latest/cortex_m/peripheral/struct.NVIC.html
 [RTIC]: https://rtic.rs/
 [Arm's documentation]: https://developer.arm.com/documentation/ddi0337/e/Nested-Vectored-Interrupt-Controller/About-the-NVIC
 
-### The vector table
+### ベクタテーブル
 
-When describing the NVIC, I said it could "cause the processor to run the relevant interrupt handler
-code". But how does that actually work?
+NVIC を説明する際に、「関連する割り込みハンドラコードをプロセッサに実行させる」と述べました。しかし、実際にはそれはどのように動作するのでしょうか？
 
-First, we need some way for the processor to know which code to run for each interrupt. On Cortex-M
-processors, this involves a part of memory called the vector table. It is typically located at the
-very start of the flash memory that contains our code, which is reprogrammed every time we upload
-new code to our processor, and contains a list of addresses -- the locations in memory of every
-interrupt function. The specific layout of the start of memory is defined by Arm in the
-[Architecture Reference Manual]; for our purposes the important part is that bytes 64 through to 256
-contain the addresses of all 48 interrupt handlers for the nRF processor we use, four bytes per
-address. Each interrupt has a number, from 0 to 47. For example, `TIMER0` is interrupt number 8, and
-so bytes 96 to 100 contain the four-byte address of its interrupt handler. When the NVIC tells the
-processor to handle interrupt number 8, the CPU reads the address stored in those bytes and jumps
-execution to it.
+まず、各割り込みに対してどのコードを実行すべきかをプロセッサが知るための仕組みが必要です。Cortex-M プロセッサでは、これはベクタテーブルと呼ばれるメモリ領域に関係します。これは通常、私たちのコードを含むフラッシュメモリの先頭に配置されており、そのフラッシュメモリは新しいコードをプロセッサに書き込むたびに再プログラムされます。そしてそこには、すべての割り込み関数のアドレス、つまりメモリ上の位置の一覧が含まれています。メモリ先頭部分の具体的なレイアウトは [Architecture Reference Manual] で Arm によって定義されています。ここでは、64 バイト目から 256 バイト目までに、私たちが使用する nRF プロセッサの 48 個すべての割り込みハンドラのアドレスが、1 アドレスあたり 4 バイトで格納されていることが重要です。各割り込みには 0 から 47 までの番号があります。たとえば、`TIMER0` は割り込み番号 8 なので、96 バイト目から 100 バイト目にはその割り込みハンドラの 4 バイトアドレスが含まれています。NVIC がプロセッサに割り込み番号 8 を処理するよう指示すると、CPU はそのバイト列に格納されたアドレスを読み取り、そこへ実行をジャンプします。
 
-How is this vector table generated in our code? We use the [`cortex-m-rt`] crate which handles this
-for us. It provides a default interrupt for every unused position (since every position must be
-filled) and allows our code to override this default whenever we want to specify our own interrupt
-handler. We do this using the `#[interrupt]` macro, which requires that our function be given a
-specific name related to the interrupt it handles. Then the `cortex-m-rt` crate uses its linker
-script to arrange for the address of that function to be placed in the right part of memory.
+このベクタテーブルは、私たちのコードではどのように生成されるのでしょうか？ 私たちは [`cortex-m-rt`] crate を使用しており、これがその処理を担ってくれます。この crate は、使用されていない各位置に対してデフォルトの割り込みを提供し（すべての位置が埋まっていなければならないため）、独自の割り込みハンドラを指定したい場合には、このデフォルトをコード側で上書きできるようにしています。これには `#[interrupt]` マクロを使います。このマクロでは、関数に、その関数が処理する割り込みに関連した特定の名前を付ける必要があります。その後、`cortex-m-rt` crate がそのリンカスクリプトを使って、その関数のアドレスがメモリ内の正しい場所に配置されるようにします。
 
-For more details on how these interrupt handlers are managed in Rust, see the Exceptions and
-Interrupts chapters in the [Embedded Rust Book].
+Rust におけるこれらの割り込みハンドラの管理方法についてさらに詳しく知りたい場合は、[Embedded Rust Book] の Exceptions 章および Interrupts 章を参照してください。
 
 [Architecture Reference Manual]: https://developer.arm.com/documentation/ddi0403/latest
 [`cortex-m-rt`]: https://docs.rs/cortex-m-rt

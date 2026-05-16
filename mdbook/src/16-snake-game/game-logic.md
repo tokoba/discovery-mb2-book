@@ -1,96 +1,93 @@
-# Game logic
+# ゲームロジック
 
-The first module we will build is the game logic. You are probably familiar with [snake] games, but
-if not, the basic idea is that the player guides a snake around a 2D grid. At any given time, there
-is some "food" at a random location on the grid and the goal of the game is to get the snake to
-"eat" as much food as possible. Each time the snake eats food it grows in length. The player loses
-if the snake crashes into its own tail.
+最初に作成するモジュールは、ゲームロジックです。あなたはおそらく [snake] ゲームをご存じでしょうが、
+もし知らなくても、基本的なアイデアは、プレイヤーが 2D グリッド上でヘビを動かすというものです。常に、
+グリッド上のどこかランダムな位置に「食べ物」があり、ゲームの目標はヘビにできるだけ多くの食べ物を
+「食べさせる」ことです。ヘビは食べ物を食べるたびに長くなります。ヘビが自分の尻尾に衝突すると、
+プレイヤーの負けです。
 
 [snake]: https://en.wikipedia.org/wiki/Snake_%28video_game_genre%29
 
-In some variants of the game, the player also loses if the snake crashes into the edge of the grid,
-but given the small size of our grid we are going to implement a "wraparound" rule: if the snake
-goes off one edge of the grid, it will continue from the opposite edge.
+ゲームのバリエーションによっては、ヘビがグリッドの端に衝突してもプレイヤーの負けになりますが、
+今回のグリッドは小さいため、「ラップアラウンド」ルールを実装します。つまり、ヘビがグリッドの一方の端から
+外に出た場合、反対側の端から続けて現れます。
 
-## The `game` module
+## `game` モジュール
 
-We will build up the game mechanics in the `game` module.
+ゲームの仕組みは `game` モジュールの中で組み立てていきます。
 
-### Coordinates
+### 座標
 
-We start by defining a coordinate system for our game (`src/game/coords.rs`).
+まず、ゲーム用の座標系を定義します（`src/game/coords.rs`）。
 
 ```rust
 {{#include src/game/coords.rs}}
 ```
 
-We use a `Coords` struct to refer to a position on the grid. Because `Coords` only contains two
-integers, we tell the compiler to derive an implementation of the `Copy` trait for it, so we can
-pass around `Coords` structs without having to worry about ownership.
+グリッド上の位置を表すために `Coords` 構造体を使います。`Coords` は 2 つの整数しか含まないため、
+所有権を気にせずに `Coords` 構造体を受け渡しできるよう、コンパイラに `Copy` トレイトの実装を
+derive させます。
 
-### Random Number Generation
+### 乱数生成
 
-We define an associated function, `Coords::random`, which will give us a random position on the
-grid. We will use this later to determine where to place the snake's food.
+関連関数 `Coords::random` を定義します。これにより、グリッド上のランダムな位置を取得できます。
+これは後で、ヘビの食べ物をどこに配置するかを決めるために使います。
 
-To generate random coordinates, we need a source of random numbers. The nRF52833 has a hardware
-random number generator (HWRNG) peripheral, documented at section 6.19 of the [nRF52833 spec]. The
-HAL gives us a simple interface to the HWRNG via the `microbit::hal::rng::Rng` struct. The HWRNG may
-not be fast enough for a game; it is also convenient for testing to be able to replicate the
-sequence of random numbers produced by the generator between runs, which is impossible for the HWRNG
-by design. We thus also define a [pseudo-random] number generator (PRNG). The PRNG uses an
-[xorshift] algorithm to generate pseudo-random `u32` values. The algorithm is basic and not
-cryptographically secure, but it is efficient, easy to implement and good enough for our humble
-snake game. Our `Prng` struct requires an initial seed value, which we do get from the RNG
-peripheral.
+ランダムな座標を生成するには、乱数の供給源が必要です。nRF52833 にはハードウェア乱数生成器
+（HWRNG）ペリフェラルがあり、これは [nRF52833 spec] の 6.19 節に記載されています。HAL は
+`microbit::hal::rng::Rng` 構造体を介して HWRNG へのシンプルなインターフェースを提供してくれます。HWRNG は
+ゲーム用途には十分な速度でない可能性があります。またテストでは、実行ごとに生成器が出力する乱数列を
+再現できると便利ですが、HWRNG では設計上それは不可能です。そこで、[pseudo-random] 数生成器（PRNG）も
+定義します。PRNG は [xorshift] アルゴリズムを用いて、擬似乱数の `u32` 値を生成します。このアルゴリズムは
+基本的なもので、暗号学的に安全ではありませんが、効率的で実装も簡単であり、ささやかな snake ゲームには
+十分です。`Prng` 構造体には初期シード値が必要ですが、それは RNG ペリフェラルから取得します。
 
 [nRF52833 spec]: https://docs-be.nordicsemi.com/bundle/ps_nrf52833/attach/nRF52833_PS_v1.7.pdf
 [pseudo-random]: https://en.wikipedia.org/wiki/Pseudorandom_number_generator
 [xorshift]: https://en.wikipedia.org/wiki/Xorshift
 
-All of this makes up `src/game/rng.rs`.
+これらすべてをまとめたものが `src/game/rng.rs` です。
 
 ```rust
 {{#include src/game/rng.rs}}
 ```
 
-### Movement
+### 移動
 
-We also need to define a few `enum`s that help us manage the game's state: direction of movement,
-direction to turn, the current game status and the outcome of a particular "step" in the game (ie, a
-single movement of the snake). `src/game/movement.rs` contains these.
+ゲームの状態管理に役立つ、いくつかの `enum` も定義する必要があります。移動方向、曲がる方向、
+現在のゲーム状態、そしてゲーム内の特定の「ステップ」（つまり、ヘビの 1 回の移動）の結果です。
+これらは `src/game/movement.rs` に含まれています。
 
 ```rust
 {{#include src/game/movement.rs}}
 ```
 
-### A Snake (*A Snaaake!*)
+### Snake（*A Snaaake!*）
 
-Next up we define a `Snake` struct, which keeps track of the coordinates occupied by the snake and
-its direction of travel. We use a queue (`heapless::spsc::Queue`) to keep track of the order of
-coordinates and a hash set (`heapless::FnvIndexSet`) to allow for quick collision detection.  The
-`Snake` has methods to allow it to move. `src/game/snake.rs` gets this.
+次に、ヘビが占有している座標と進行方向を追跡する `Snake` 構造体を定義します。座標の順序を管理するために
+キュー（`heapless::spsc::Queue`）を使い、高速に衝突判定を行えるようにハッシュセット
+（`heapless::FnvIndexSet`）を使います。`Snake` には移動を行うためのメソッドがあります。これを
+`src/game/snake.rs` に実装します。
 
 ```rust
 {{#include src/game/snake.rs}}
 ```
 
-### Game Module Top-Level
+### ゲームモジュールのトップレベル
 
-The `Game` struct keeps track of the game state. It holds a `Snake` object, the current coordinates
-of the food, the speed of the game (which is used to determine the time that elapses between each
-movement of the snake), the status of the game (whether the game is ongoing or the player has won or
-lost) and the player's score.
+`Game` 構造体はゲーム状態を追跡します。これには `Snake` オブジェクト、現在の食べ物の座標、
+ゲームの速度（ヘビの各移動の間に経過する時間を決めるために使われます）、ゲームの状態
+（ゲームが進行中か、プレイヤーが勝ったか負けたか）、そしてプレイヤーのスコアが含まれます。
 
-This struct contains methods to handle each step of the game, determining the snake's next move and
-updating the game state accordingly. It also contains two methods--`game_matrix` and
-`score_matrix`--that output 2D arrays of values which can be used to display the game state or the
-player score on the LED matrix (as we will see later).
+この構造体には、ゲームの各ステップを処理し、ヘビの次の動きを決定して、それに応じてゲーム状態を
+更新するメソッドが含まれます。また、`game_matrix` と `score_matrix` という 2 つのメソッドもあり、
+LED マトリクス上にゲーム状態やプレイヤーのスコアを表示するために使える値の 2 次元配列を出力します
+（これについては後で見ます）。
 
-We put the `Game` struct at the top of the `game` module, in `src/game.rs`.
+`Game` 構造体は、`game` モジュールの最上位である `src/game.rs` に配置します。
 
 ```rust
 {{#include src/game.rs}}
 ```
 
-Next we will add the ability to control the snake's movements.
+次に、ヘビの動きを操作できるようにします。

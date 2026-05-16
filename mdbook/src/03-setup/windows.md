@@ -2,9 +2,9 @@
 
 ## `arm-none-eabi-gdb`
 
-Arm provides `.exe` installers for Windows. Grab one from [here][gcc], and follow the instructions.
-Just before the installation process finishes tick/select the "Add path to environment variable"
-option. Then verify that the tools are in your `%PATH%`:
+Arm は Windows 向けの `.exe` インストーラーを提供しています。[こちら][gcc] から入手して、指示に従ってください。
+インストール処理が完了する直前に、"Add path to environment variable"
+オプションにチェックを入れるか、選択してください。その後、ツールが `%PATH%` に入っていることを確認してください。
 
 ``` console
 $ arm-none-eabi-gcc -v
@@ -16,10 +16,10 @@ gcc version 5.4.1 20160919 (release) (..)
 
 ## PuTTY
 
-Download the latest `putty.exe` from [this site] and place it somewhere in your `%PATH%`.
+最新の `putty.exe` を [このサイト][this site] からダウンロードし、`%PATH%` 内のどこかに配置してください。
 
 [this site]: http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
 
-Now, go to the [next section].
+それでは、[次のセクション][next section] に進んでください。
 
 [next section]: verify.md

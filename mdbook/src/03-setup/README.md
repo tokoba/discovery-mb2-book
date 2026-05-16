@@ -1,49 +1,38 @@
-# Setting up a development environment
+# 開発環境のセットアップ
 
-Dealing with microcontrollers involves several tools as we'll be dealing with an architecture
-different from your computer's and we'll have to run and debug programs on a "remote" device.
+マイクロコントローラーを扱うには複数のツールが必要です。というのも、コンピューターとは異なるアーキテクチャを扱うことになり、さらに「リモート」デバイス上でプログラムを実行してデバッグする必要があるためです。
 
-## Documentation
+## ドキュメント
 
-Tooling is not everything though. Without documentation, it is pretty much impossible to work with
-microcontrollers. The official MB2 technical documentation is at <https://tech.microbit.org>. We
-will reference other technical documentation throughout the book.
+とはいえ、ツールだけですべてが揃うわけではありません。ドキュメントがなければ、マイクロコントローラーを扱うことはほぼ不可能です。MB2 の公式技術ドキュメントは <https://tech.microbit.org> にあります。本書を通して、ほかの技術ドキュメントも参照していきます。
 
-## Tools
+## ツール
 
-We'll use all the tools listed below. Where a minimum version is not specified, any recent version
-should work but we have listed the version we have tested.
+以下に挙げるすべてのツールを使用します。最小バージョンが指定されていないものについては、最近のバージョンであればどれでも動作するはずですが、ここではテストに使用したバージョンを記載しています。
 
-- Rust 1.79.0 or a newer toolchain.
+- Rust 1.79.0 以降のツールチェーン。
 
-- `gdb-multiarch`. This is a debugging tool. The oldest tested version is 10.2, but other versions
-  will most likely work as well.  If your distribution/platform does not have `gdb-multiarch`
-  available `arm-none-eabi-gdb` will do the trick as well. Furthermore, some normal `gdb` binaries
-  are built with multiarch capabilities as well: you can find further information about this in the
-  debugging chapter of this book.
+- `gdb-multiarch`。これはデバッグツールです。テスト済みの最も古いバージョンは 10.2 ですが、ほかのバージョンでもおそらく動作します。お使いのディストリビューションやプラットフォームで `gdb-multiarch` が利用できない場合は、`arm-none-eabi-gdb` でも問題ありません。さらに、通常の `gdb` バイナリの中にも multiarch 機能付きでビルドされているものがあります。これについての詳細は、本書のデバッグの章を参照してください。
 
-- [`cargo-binutils`]. Version 0.3.6 or newer.
+- [`cargo-binutils`]。バージョン 0.3.6 以降。
 
   [`cargo-binutils`]: https://github.com/rust-embedded/cargo-binutils
 
-- [`probe-rs-tools`]. Version 0.24.0 or newer.
+- [`probe-rs-tools`]。バージョン 0.24.0 以降。
 
   [`probe-rs-tools`]: https://probe.rs/docs/overview/about-probe-rs/
 
-- `minicom` on Linux and macOS. Tested version: 2.7.1. Other versions will most likely work as well
-  though.
+- Linux および macOS では `minicom`。テスト済みバージョンは 2.7.1 です。ただし、ほかのバージョンでもおそらく動作します。
 
-- `PuTTY` on Windows.
+- Windows では `PuTTY`。
 
-Next, follow OS-agnostic installation instructions for a few of the tools:
+次に、いくつかのツールについて OS に依存しないインストール手順に従ってください。
 
 ### `rustc` & Cargo
 
-Install rustup by following the instructions at [https://rustup.rs](https://rustup.rs).
+[https://rustup.rs](https://rustup.rs) の手順に従って rustup をインストールしてください。
 
-If you already have rustup installed, double check that you are on the stable channel and your
-stable toolchain is up-to-date. `rustc -V` should return a date and version no older than the one
-shown below:
+すでに rustup をインストール済みであれば、stable チャンネルを使用しており、stable ツールチェーンが最新であることを再確認してください。`rustc -V` は、以下に示すもの以上に新しい日付とバージョンを返すはずです。
 
 ``` console
 $ rustc -V
@@ -61,10 +50,7 @@ cargo-size 0.3.6
 
 ### `probe-rs-tools`
 
-**NOTE** If you already have old versions of `probe-run`, `probe-rs` or `cargo-embed` installed
-on your system, remove them before starting this step, as they could conceivably cause problems
-for you down the line. In particular, `probe-run` no longer officially exists. Try these as
-needed:
+**注記** すでに古いバージョンの `probe-run`、`probe-rs`、または `cargo-embed` がシステムにインストールされている場合は、この手順を始める前にそれらを削除してください。将来的に問題を引き起こす可能性があるためです。特に、`probe-run` はもはや公式には存在しません。必要に応じて、次を試してください。
 
 ```console
 $ cargo uninstall cargo-embed
@@ -73,49 +59,41 @@ $ cargo uninstall probe-rs
 $ cargo uninstall probe-rs-cli
 ```
 
-In order to install `probe-rs-tools`, go to <https://probe.rs> and follow the current installation
-instructions there.
+`probe-rs-tools` をインストールするには、<https://probe.rs> にアクセスし、そこにある最新のインストール手順に従ってください。
 
-* **NOTE** If you prefer to install `probe-rs-tools` using `cargo install`, you can try the
-  following steps.  Folks have experienced frequent failures with this approach, but you are
-  welcome to give it a go.
+* **注記** `cargo install` を使って `probe-rs-tools` をインストールしたい場合は、以下の手順を試すことができます。この方法では失敗が頻発したという報告がありますが、試してみるのは自由です。
 
-  1. Upgrade to the most recent stable Rust.
+  1. 最新の stable Rust にアップグレードします。
 
-  2. Install the `probe-rs-tools` binary
-     [prerequisites](https://probe.rs/docs/getting-started/installation/).  (The linked
-     instructions are part of the more general [`probe-rs`](https://probe.rs/) embedded debugging
-     toolkit documentation.)
+  2. `probe-rs-tools` バイナリの
+     [前提条件](https://probe.rs/docs/getting-started/installation/) をインストールします。（リンク先の
+     手順は、より一般的な [`probe-rs`](https://probe.rs/) 組み込みデバッグ
+     ツールキットのドキュメントの一部です。）
 
-  3. Try the install
+  3. インストールを試します
 
      ```console
      $ cargo install --locked probe-rs-tools
      ```
 
-Installing `probe-rs-tools` will install several useful tools, including `probe-rs` and
-`cargo-embed` (which is normally run as a Cargo command). Check that things are working before
-proceeding.
+`probe-rs-tools` をインストールすると、`probe-rs` や `cargo-embed`（通常は Cargo コマンドとして実行されます）を含む、いくつかの便利なツールがインストールされます。先に進む前に、正しく動作していることを確認してください。
 
 ```
 $ cargo embed --version
 cargo-embed 0.24.0 (git commit: crates.io)
 ```
 
-### This repository
+### このリポジトリ
 
-This book also contains some small Rust codebases used in various chapters: the easiest way to use
-these is to download the book's source code. You can do this in one of the following ways:
+この本には、各章で使用する小規模な Rust コードベースもいくつか含まれています。これらを使う最も簡単な方法は、本のソースコードをダウンロードすることです。これは次のいずれかの方法で行えます。
 
-- Visit the [repository](https://github.com/rust-embedded/discovery-mb2/), click the green "Code"
-  button and then the "Download Zip" one.
+- [リポジトリ](https://github.com/rust-embedded/discovery-mb2/) にアクセスし、緑色の "Code" ボタンをクリックしてから "Download Zip" をクリックします。
 
-- Clone it using `git` (if you know `git` you presumably already have it installed) from the same
-  repository as linked in the Zip approach.
+- `git` を使ってクローンします（`git` を知っているなら、おそらくすでにインストール済みでしょう）。クローン元は、Zip の方法でリンクしたものと同じリポジトリです。
 
-### OS specific instructions
+### OS 固有の手順
 
-Now follow the instructions specific to the OS you are using:
+次に、使用している OS に対応する手順に従ってください。
 
 - [Linux](linux.md)
 - [Windows](windows.md)

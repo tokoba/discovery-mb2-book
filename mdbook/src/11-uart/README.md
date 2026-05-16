@@ -1,9 +1,5 @@
 # UART
 
-Our microcontroller (like most) has UART ("Universal Asynchronous Receiver/Transmitter)
-peripherals. There are two kinds of UART peripheral on the MB2: the older `UART` and the newer
-`UARTE` ("UART with Easy DMA").  We will use a `UARTE` peripheral to talk to our hardware serial
-port.
+このマイクロコントローラ（多くのものと同様）には、UART（「Universal Asynchronous Receiver/Transmitter」）ペリフェラルがあります。MB2 には 2 種類の UART ペリフェラルがあり、古い `UART` と新しい `UARTE`（「Easy DMA を備えた UART」）があります。ハードウェアシリアルポートと通信するために、`UARTE` ペリフェラルを使用します。
 
-Throughout this chapter, we'll use serial communication to exchange information between the
-microcontroller and your computer.
+この章全体を通して、シリアル通信を使用してマイクロコントローラとコンピュータの間で情報をやり取りします。

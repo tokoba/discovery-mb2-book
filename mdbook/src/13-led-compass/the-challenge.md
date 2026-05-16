@@ -1,10 +1,8 @@
-# The Challenge
+# 課題
 
-We'll use some fancy math to get the precise angle that the magnetic field forms with the X and Y
-axes of the magnetometer. This will allow us to figure out which LED is pointing north.
+磁場が磁力計の X 軸および Y 軸となす正確な角度を求めるために、少し高度な数学を使います。これにより、どの LED が北を向いているかを特定できます。
 
-We'll use the `atan2` function. This function returns an angle in the `-PI` to `PI` range. The
-graphic below shows how this angle is measured:
+`atan2` 関数を使います。この関数は、`-PI` から `PI` の範囲の角度を返します。下の図は、この角度がどのように測定されるかを示しています。
 
 <a href="https://commons.wikimedia.org/wiki/File:Atan2_60.svg">
 <p align="center">
@@ -12,20 +10,18 @@ graphic below shows how this angle is measured:
 </p>
 </a>
 
-Although not explicitly shown, in this graph the X axis points to the right and the Y axis points
-up. Note that our coordinate system is rotated 180° from this.
+明示的には示されていませんが、この図では X 軸は右向き、Y 軸は上向きです。私たちの座標系はこれから 180° 回転していることに注意してください。
 
-Here's the starter code (in `templates/compass.rs`). `theta`, in radians, has already been
-computed. You need to pick which LED to turn on based on the value of `theta`.
+以下がスターターコードです（`templates/compass.rs` 内）。ラジアン単位の `theta` は、すでに計算されています。`theta` の値に基づいて、どの LED を点灯させるかを選ぶ必要があります。
 
 ```rs
 {{#include templates/compass.rs}}
 ```
 
-Suggestions/tips:
+提案/ヒント:
 
-- A whole circle rotation equals 360 degrees.
-- `PI` radians is equivalent to 180 degrees.
-- If `theta` is zero, which direction are you pointing at?
-- If `theta` is instead very close to zero, which direction are you pointing at?
-- If `theta` keeps increasing, at what value should you change the direction
+- 円を 1 周回転すると 360 度です。
+- `PI` ラジアンは 180 度に相当します。
+- `theta` が 0 なら、どの方向を指していますか？
+- では、`theta` が 0 に非常に近い場合は、どの方向を指していますか？
+- `theta` が増え続けるとしたら、どの値で方向を変えるべきでしょうか

@@ -1,52 +1,46 @@
-# How to use GDB
+# GDB の使い方
 
-Below are some useful GDB commands that can help us debug our programs. This assumes you have
-[flashed a program](../../05-meet-your-software/flash-it.md) onto your microcontroller and
-attached GDB to a `cargo-embed` session.
+以下は、プログラムのデバッグに役立つ便利な GDB コマンドです。ここでは、マイクロコントローラに[プログラムを書き込み](../../05-meet-your-software/flash-it.md)、GDB を `cargo-embed` セッションに接続していることを前提としています。
 
-## General Debugging
+## 一般的なデバッグ
 
-> **NOTE:** Many of the commands you see below can be executed using a short form. For example,
-> `continue` can simply be used as `c`, or `break $location` can be used as `b $location`. Once you
-> have experience with the commands below, try to see how short you can get the commands to go
-> before GDB doesn't recognize them!
+> **注:** 以下に示すコマンドの多くは短縮形で実行できます。たとえば、`continue` は単に `c`、`break $location` は `b $location` として使用できます。以下のコマンドに慣れてきたら、GDB が認識しなくなる直前まで、どこまで短くできるか試してみてください!
 
 
-### Dealing with Breakpoints
+### ブレークポイントの操作
 
-* `break $location`: Set a breakpoint at a place in your code. The value of `$location` can include:
-    * `break *main` - Break on the exact address of the function `main`
-    * `break *0x080012f2` - Break on the exact memory location `0x080012f2`
-    * `break 123` - Break on line 123 of the currently displayed file
-    * `break main.rs:123` - Break on line 123 of the file `main.rs`
-* `info break`: Display current breakpoints
-* `delete`: Delete all breakpoints
-    * `delete $n`: Delete breakpoint `$n` (`n` being a number. For example: `delete $2`)
-* `clear`: Delete breakpoint at next instruction
-    * `clear main.rs:$function`: Delete breakpoint at entry of `$function` in `main.rs`
-    * `clear main.rs:123`: Delete breakpoint on line 123 of `main.rs`
-* `enable`: Enable all set breakpoints
-  * `enable $n`: Enable breakpoint `$n`
-* `disable`: Disable all set breakpoints
-  * `disable $n`: Disable breakpoint `$n`
+* `break $location`: コード内の場所にブレークポイントを設定します。`$location` の値には次のものを指定できます:
+    * `break *main` - 関数 `main` の正確なアドレスでブレークします
+    * `break *0x080012f2` - 正確なメモリアドレス `0x080012f2` でブレークします
+    * `break 123` - 現在表示されているファイルの 123 行目でブレークします
+    * `break main.rs:123` - ファイル `main.rs` の 123 行目でブレークします
+* `info break`: 現在のブレークポイントを表示します
+* `delete`: すべてのブレークポイントを削除します
+    * `delete $n`: ブレークポイント `$n` を削除します（`n` は数値。例: `delete $2`）
+* `clear`: 次の命令位置のブレークポイントを削除します
+    * `clear main.rs:$function`: `main.rs` 内の `$function` のエントリにあるブレークポイントを削除します
+    * `clear main.rs:123`: `main.rs` の 123 行目のブレークポイントを削除します
+* `enable`: 設定済みのすべてのブレークポイントを有効にします
+  * `enable $n`: ブレークポイント `$n` を有効にします
+* `disable`: 設定済みのすべてのブレークポイントを無効にします
+  * `disable $n`: ブレークポイント `$n` を無効にします
 
-### Controlling Execution
+### 実行の制御
 
-* `continue`: Begin or continue execution of your program
-* `next`: Execute the next line of your program
-    * `next $n`: Repeat `next` `$n` number times
-* `nexti`: Same as `next` but with machine instructions instead
-* `step`: Execute the next line, if the next line includes a call to another function, step into that code
-    * `step $n`: Repeat `step` `$n` number times
-* `stepi`: Same as `step` but with machine instructions instead
-* `jump $location`: Resume execution at specified location:
-    * `jump 123`: Resume execution at line 123
-    * `jump 0x080012f2`: Resume execution at address 0x080012f2
+* `continue`: プログラムの実行を開始または再開します
+* `next`: プログラムの次の行を実行します
+    * `next $n`: `next` を `$n` 回繰り返します
+* `nexti`: `next` と同じですが、代わりに機械語命令単位で実行します
+* `step`: 次の行を実行します。次の行に別の関数の呼び出しが含まれている場合は、そのコードの中に入ります
+    * `step $n`: `step` を `$n` 回繰り返します
+* `stepi`: `step` と同じですが、代わりに機械語命令単位で実行します
+* `jump $location`: 指定した場所から実行を再開します:
+    * `jump 123`: 123 行目から実行を再開します
+    * `jump 0x080012f2`: アドレス 0x080012f2 から実行を再開します
 
-### Printing Information
+### 情報の表示
 
-* `print /$f $data` - Print the value contained by the variable `$data`. Optionally format the
-  output with `$f`, which can include:
+* `print /$f $data` - 変数 `$data` に含まれている値を表示します。必要に応じて `$f` で出力形式を指定できます。指定できる値は次のとおりです:
     ```txt
     x: hexadecimal
     d: signed decimal
@@ -57,42 +51,37 @@ attached GDB to a `cargo-embed` session.
     c: character
     f: floating point
     ```
-    * `print /t 0xA`: Prints the hexadecimal value `0xA` as binary (0b1010)
+    * `print /t 0xA`: 16 進数の値 `0xA` を 2 進数（0b1010）として表示します
 
-* `x /$n$u$f $address`: Examine memory at `$address`. Optionally, `$n` define the number of units to
-  display, `$u` unit size (bytes, halfwords, words, etc.), `$f` any `print` format defined above
-    * `x /5i 0x080012c4`: Print 5 machine instructions staring at address `0x080012c4`
-    * `x/4xb $pc`: Print 4 bytes of memory starting where `$pc` currently is pointing
+* `x /$n$u$f $address`: `$address` にあるメモリを調べます。必要に応じて、`$n` で表示する単位数、`$u` で単位サイズ（バイト、ハーフワード、ワードなど）、`$f` で上記の `print` 形式を指定できます
+    * `x /5i 0x080012c4`: アドレス `0x080012c4` から始まる 5 個の機械語命令を表示します
+    * `x/4xb $pc`: `$pc` が現在指している位置から始まる 4 バイトのメモリを表示します
 * `disassemble $location`
-    * `disassemble /r main`: Disassemble the function `main`, using `/r` to show the bytes that make
-      up each instruction
+    * `disassemble /r main`: 関数 `main` を逆アセンブルします。`/r` を使うと各命令を構成するバイトも表示されます
 
 
-### Looking at the Symbol Table
+### シンボルテーブルを見る
 
-* `info functions $regex`: Print the names and data types of functions matched by `$regex`, omit
-  `$regex` to print all functions
-    * `info functions main`: Print names and types of defined functions that contain the word `main`
-* `info address $symbol`: Print where `$symbol` is stored in memory
-    * `info address GPIOC`: Print the memory address of the variable `GPIOC`
-* `info variables $regex`: Print names and types of global variables matched by `$regex`, omit
-  `$regex` to print all global variables
-* `ptype $data`: Print more detailed information about `$data`
-    * `ptype cp`: Print detailed type information about the variable `cp`
+* `info functions $regex`: `$regex` に一致する関数の名前とデータ型を表示します。すべての関数を表示するには `$regex` を省略します
+    * `info functions main`: `main` という語を含む定義済み関数の名前と型を表示します
+* `info address $symbol`: `$symbol` がメモリ上のどこに格納されているかを表示します
+    * `info address GPIOC`: 変数 `GPIOC` のメモリアドレスを表示します
+* `info variables $regex`: `$regex` に一致するグローバル変数の名前と型を表示します。すべてのグローバル変数を表示するには `$regex` を省略します
+* `ptype $data`: `$data` に関するより詳細な情報を表示します
+    * `ptype cp`: 変数 `cp` の詳細な型情報を表示します
 
-### Poking around the Program Stack
+### プログラムスタックを調べる
 
-* `backtrace $n`: Print trace of `$n` frames, or omit `$n` to print all frames
-  * `backtrace 2`: Print trace of first 2 frames
-* `frame $n`: Select frame with number or address `$n`, omit `$n` to display current frame
-* `up $n`: Select frame `$n` frames up
-* `down $n`: Select frame `$n` frames down
-* `info frame $address`: Describe frame at `$address`, omit `$address` for currently selected frame
-* `info args`: Print arguments of selected frame
-* `info registers $r`: Print the value of register `$r` in selected frame, omit `$r` for all
-  registers
-    * `info registers $sp`: Print the value of the stack pointer register `$sp` in the current frame
+* `backtrace $n`: `$n` 個のフレームのトレースを表示します。すべてのフレームを表示するには `$n` を省略します
+  * `backtrace 2`: 最初の 2 フレームのトレースを表示します
+* `frame $n`: 番号またはアドレス `$n` のフレームを選択します。現在のフレームを表示するには `$n` を省略します
+* `up $n`: `$n` フレーム上のフレームを選択します
+* `down $n`: `$n` フレーム下のフレームを選択します
+* `info frame $address`: `$address` にあるフレームを説明します。現在選択されているフレームについて表示するには `$address` を省略します
+* `info args`: 選択されているフレームの引数を表示します
+* `info registers $r`: 選択されているフレーム内のレジスタ `$r` の値を表示します。すべてのレジスタを表示するには `$r` を省略します
+    * `info registers $sp`: 現在のフレームにおけるスタックポインタレジスタ `$sp` の値を表示します
 
-### Controlling `cargo-embed` Remotely
+### `cargo-embed` をリモートで制御する
 
-* `monitor reset`: Reset the CPU, starting execution over again
+* `monitor reset`: CPU をリセットし、最初から実行を開始します

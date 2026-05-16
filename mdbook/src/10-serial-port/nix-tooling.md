@@ -1,70 +1,56 @@
-# Linux USB←→serial tooling
+# Linux での USB←→シリアル用ツール
 
-The MB2's USB emulated serial device shows up in Linux when you connect the MB2 to a Linux USB
-port.
+MB2 の USB エミュレートシリアルデバイスは、MB2 を Linux の USB ポートに接続すると Linux 上に現れます。
 
-## Connecting the MB2 board
+## MB2 ボードの接続
 
-If you connect the MB2 board to your computer you should see a new TTY device appear in
-`/dev`.
+MB2 ボードをコンピューターに接続すると、`/dev` に新しい TTY デバイスが現れるはずです。
 
 ``` console
 $ sudo dmesg -T | tail | grep -i tty
 [63712.446286] cdc_acm 1-1.7:1.1: ttyACM0: USB ACM device
 ```
 
-This is the USB←→serial device. On Linux, it's named `tty` (for "TeleTYpe", believe it or not).  It
-should show up as `ttyACM0`, or maybe `ttyUSB0`. If other "ACM" devices are plugged in, the number
-will be higher.  (On Mac OS `ls /dev/cu.usbmodem*` will show the serial device.)
+これが USB←→シリアルデバイスです。Linux では、これは `tty`（"TeleTYpe" の略です。信じられないかもしれませんが）という名前になっています。これは `ttyACM0`、あるいは `ttyUSB0` として表示されるはずです。ほかの "ACM" デバイスが接続されている場合は、番号はより大きくなります。（Mac OS では `ls /dev/cu.usbmodem*` でシリアルデバイスを表示できます。）
 
-But what exactly is `ttyACM0`? It's a file of course!  Everything is a file in Unix:
+では、`ttyACM0` とは正確には何なのでしょうか？もちろんファイルです！ Unix では、すべてがファイルです。
 
 ```
 $ ls -l /dev/ttyACM0
 crw-rw----+ 1 root plugdev 166, 0 Jan 21 11:56 /dev/ttyACM0
 ```
 
-Note that you will need to be either running as `root` (not advised) or a member of the group that
-appears in the `ls` output (usually `plugdev` or `dialout`) to read and write this device. You can
-then send out data by simply writing to this file:
+このデバイスを読み書きするには、`root` として実行する（推奨されません）か、`ls` の出力に表示されるグループ（通常は `plugdev` または `dialout`）のメンバーである必要があることに注意してください。そうすれば、このファイルに単純に書き込むだけでデータを送信できます。
 
 ``` console
 $ echo 'Hello, world!' > /dev/ttyACM0
 ```
 
-You should see the orange LED on the MB2, right next to the USB port, blink for a moment, whenever
-you enter this command. The bit rate and other serial parameters may not be set up right for the MB2
-serial port, but the MB2 can tell that it is being sent serial.
+このコマンドを入力すると、USB ポートのすぐ横にある MB2 のオレンジ色の LED が一瞬点滅するはずです。ビットレートやその他のシリアルパラメーターは MB2 のシリアルポートに対して正しく設定されていない可能性がありますが、それでも MB2 はシリアルデータが送られてきていることを認識できます。
 
 ## minicom
 
-We'll use the program `minicom` to interact with the serial device using the keyboard.  We will use
-the default settings of modern `minicom`: 115200 bps, 8 data bits, one stop bit, no parity bits, no
-flow control. (115200 bps happens to be a rate that will work with the MB2.)
+キーボードを使ってシリアルデバイスと対話するために、`minicom` というプログラムを使います。ここでは最新の `minicom` のデフォルト設定、つまり 115200 bps、8 データビット、1 ストップビット、パリティビットなし、フロー制御なしを使います。（115200 bps は、たまたま MB2 で動作する速度です。）
 
 ``` console
 $ minicom -D /dev/ttyACM0
 ```
 
-This tells `minicom` to open the serial device at `/dev/ttyACM0`.  A text-based user interface
-(TUI) will pop out.
+これは、`minicom` に `/dev/ttyACM0` のシリアルデバイスを開くよう指示しています。すると、テキストベースのユーザーインターフェイス（TUI）が表示されます。
 
 <p align="center">
 <img title="minicom" src="../assets/minicom.png" />
 </p>
 
-You can now send data using the keyboard! Go ahead and type something. Note that
-the text UI will *not* echo back what you type. If you pay attention to the yellow LED
-on top of the MB2 though, you will notice that it blinks whenever you type something.
+これでキーボードを使ってデータを送信できます。実際に何か入力してみてください。テキスト UI は、入力した内容を*エコーバックしない*ことに注意してください。ただし、MB2 上部の黄色い LED に注目すると、何か入力するたびに点滅することが分かります。
 
-## `minicom` commands
+## `minicom` のコマンド
 
-`minicom` exposes commands via keyboard shortcuts. On Linux, the shortcuts start with `Ctrl+A`. (On
-Mac, the shortcuts start with the `Meta` key.) Some useful commands below:
+`minicom` はキーボードショートカットを通じてコマンドを提供します。Linux では、ショートカットは `Ctrl+A` で始まります。（Mac では、ショートカットは `Meta` キーで始まります。）以下は便利なコマンドです。
 
-- `Ctrl+A` + `Z`. Minicom Command Summary
-- `Ctrl+A` + `C`. Clear the screen
-- `Ctrl+A` + `X`. Exit and reset
-- `Ctrl+A` + `Q`. Quit with no reset
+- `Ctrl+A` + `Z`. Minicom コマンド一覧
+- `Ctrl+A` + `C`. 画面をクリア
+- `Ctrl+A` + `X`. 終了してリセット
+- `Ctrl+A` + `Q`. リセットせずに終了
 
-> **NOTE** Mac users: In the above commands, replace `Ctrl+A` with `Meta`.
+> **注記** Mac ユーザー: 上記のコマンドでは、`Ctrl+A` を `Meta` に置き換えてください。

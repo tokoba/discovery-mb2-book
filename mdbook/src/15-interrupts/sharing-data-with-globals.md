@@ -1,48 +1,49 @@
-## Sharing Data With Globals
+## グローバル変数とのデータ共有
 
-> **NOTE** This content is partially taken (with permission) from the blog post
-> *[Interrupts Is Threads]* by James Munns, which contains more discussion about this
-> topic.
+> **NOTE** この内容の一部は、James Munns によるブログ記事
+> *[Interrupts Is Threads]* から（許可を得て）引用しています。この記事には、この
+> トピックに関するより詳しい議論が含まれています。
 
-As I mentioned previously, when an interrupt occurs we aren't passed any arguments and
-cannot return any result. This makes it hard for our program to interact with peripherals and other
-main program state. Before worrying about this bare-metal embedded problem, it is likely worth
-thinking about threads in "std" Rust.
+前にも述べたように、割り込みが発生しても、こちらには何の引数も渡されず、
+結果を返すこともできません。これにより、プログラムがペリフェラルや、メイン
+プログラムのほかの状態とやり取りするのが難しくなります。このベアメタル組み込み
+特有の問題について考える前に、まずは "std" Rust におけるスレッドについて考えて
+みる価値があります。
 
-### "std" Rust: Sharing Data With A Thread
+### "std" Rust: スレッドとのデータ共有
 
-In "std" Rust, we also have to think about sharing data when we do things like
-spawn a thread.
+"std" Rust でも、スレッドを spawn するようなことをするときには、データ共有を
+考える必要があります。
 
-When you want to *give* something to a thread, you might pass it into a closure by ownership.
+何かをスレッドに *渡したい* ときは、所有権を伴ってクロージャに渡すことがあります。
 
 ```rust
-// Create a string in our current thread
+// 現在のスレッドで文字列を作成する
 let data = String::from("hello");
 
-// Now spawn a new thread, and GIVE it ownership of the string
-// that we just created
+// 新しいスレッドを起動し、今作成した文字列の所有権を
+// それに渡す
 std::thread::spawn(move || {
     std::thread::sleep(std::time::Duration::from_millis(1000));
     println!("{data}");
 });
 ```
 
-If you want to *share* something, and still have access to it in the original thread, you usually
-can't pass a reference to it. If you do this:
+何かを *共有したい* うえで、元のスレッドからも引き続きアクセスしたい場合、通常は
+その参照を渡すことはできません。次のようにすると:
 
 ```rust
 use std::{thread::{sleep, spawn}, time::Duration};
 
 fn main() {
-    // Create a string in our current thread
+    // 現在のスレッドで文字列を作成する
     let data = String::from("hello");
     
-    // make a reference to pass along
+    // 渡すための参照を作る
     let data_ref = &data;
     
-    // Now spawn a new thread, and GIVE it ownership of the string
-    // that we just created
+    // 新しいスレッドを起動し、今作成した文字列の所有権を
+    // それに渡す
     spawn(|| {
         sleep(Duration::from_millis(1000));
         println!("{data_ref}");
@@ -52,7 +53,7 @@ fn main() {
 }
 ```
 
-you'll get an error like this:
+次のようなエラーが出ます:
 
 ```text
 error[E0597]: `data` does not live long enough
@@ -74,21 +75,21 @@ error[E0597]: `data` does not live long enough
    |   - `data` dropped here while still borrowed
 ```
 
-You need to *make sure the data lives long enough* for both the current thread and the new thread
-you are creating. You can do this by putting it in an `Arc` (Atomically Reference Counted heap
-allocation) like this:
+現在のスレッドと、これから作成する新しいスレッドの両方に対して、*データが十分長く
+生存することを確実にする* 必要があります。これは、次のように `Arc`
+（Atomically Reference Counted なヒープ割り当て）に入れることで実現できます:
 
 ```rust
 use std::{sync::Arc, thread::{sleep, spawn}, time::Duration};
 
 fn main() {
-    // Create a string in our current thread
+    // 現在のスレッドで文字列を作成する
     let data = Arc::new(String::from("hello"));
     
     let handle = spawn({
-        // Make a copy of the handle to GIVE to the new thread.
-        // Both `data` and `new_thread_data` are pointing at the
-        // same string!
+        // 新しいスレッドに渡すため、ハンドルのコピーを作る。
+        // `data` と `new_thread_data` はどちらも
+        // 同じ文字列を指している！
         let new_thread_data = data.clone();
         move || {
             sleep(Duration::from_millis(1000));
@@ -97,194 +98,205 @@ fn main() {
     });
     
     println!("{data}");
-    // wait for the thread to stop
+    // スレッドが停止するのを待つ
     let _ = handle.join();
 }
 ```
 
-This is great! You can now access the data in both the main thread as long as you'd
-like. But what if you want to *mutate* the data in both places?
+これは素晴らしいことです！ これで、メインスレッドでも好きなだけ長くデータに
+アクセスできるようになります。では、両方の場所でデータを *変更したい* 場合は
+どうでしょうか？
 
-For this, you will usually need some kind of "inner mutability" — a type that doesn't require an
-`&mut` to modify. On the desktop, you'd typically reach for a type like `Mutex`, `lock()`-ing it to
-gain mutable access to the data.
+このためには通常、何らかの「内部可変性」が必要になります。つまり、変更するために
+`&mut` を必要としない型です。デスクトップでは、通常 `Mutex` のような型を使い、
+それを `lock()` してデータへの可変アクセスを取得します。
 
-That might look something like this:
+これは例えば次のようになります:
 
 ```rust
 use std::{sync::{Arc, Mutex}, thread::{sleep, spawn}, time::Duration};
 
 fn main() {
-    // Create a string in our current thread
+    // 現在のスレッドで文字列を作成する
     let data = Arc::new(Mutex::new(String::from("hello")));
     
-    // lock it from the original thread
+    // 元のスレッドからロックする
     {
         let guard = data.lock().unwrap();
         println!("{guard}");
-        // the guard is dropped here at the end of the scope!
+        // ガードはスコープの終わりでここでドロップされる！
     }
     
     let handle = spawn({
-        // Make a copy of the handle, that you GIVE to the new thread.
-        // Both `data` and `new_thread_data` are pointing at the
-        // same `Mutex<String>`!
+        // 新しいスレッドに渡すため、ハンドルのコピーを作る。
+        // `data` と `new_thread_data` はどちらも
+        // 同じ `Mutex<String>` を指している！
         let new_thread_data = data.clone();
         move || {
             sleep(Duration::from_millis(1000));
             {
                 let mut guard = new_thread_data.lock().unwrap();
-                // we can modify the data!
+                // データを変更できる！
                 guard.push_str(" | thread was here! |");                
-                // the guard is dropped here at the end of the scope!
+                // ガードはスコープの終わりでここでドロップされる！
             }
         }
     });
     
-    // wait for the thread to stop
+    // スレッドが停止するのを待つ
     let _ = handle.join();
     {
         let guard = data.lock().unwrap();
         println!("{guard}");
-        // the guard is dropped here at the end of the scope!
+        // ガードはスコープの終わりでここでドロップされる！
     }
 }
 ```
 
-If you run this code, you will see:
+このコードを実行すると、次のように表示されます:
 
 ```text
 hello
 hello | thread was here! |
 ```
 
-Why does "std" Rust make us do this? Rust is helping us out by making us think about two things:
+なぜ "std" Rust ではこのようなことをしなければならないのでしょうか？ Rust は、
+次の 2 つのことを考えるよう私たちを助けてくれています:
 
-1. The data lives long enough (potentially "forever"!)
-2. Only one piece of code can mutably access the data at a time
+1. データが十分長く生存すること（場合によっては「永遠に」！）
+2. 一度に可変アクセスできるコードは 1 つだけであること
 
-If Rust allowed us to access data that might not live long enough, like data borrowed from one
-thread into another, things might go wrong. We might get corrupted data if the original thread ends
-or panics and then the second thread tries to access the data that is now invalid. If Rust allowed
-two pieces of code to try to mutate the same data at the same, we could have a data race, or the
-data could end up corrupted.
+Rust が、十分長く生存しないかもしれないデータ、たとえばあるスレッドから別の
+スレッドへ借用されたデータへのアクセスを許してしまうと、問題が起こるかもしれません。
+元のスレッドが終了したり panic したりしたあとで、2 つ目のスレッドがすでに無効に
+なったデータにアクセスしようとすると、データが壊れてしまう可能性があります。Rust が、
+同じデータを 2 つのコード片が同時に変更しようとすることを許してしまうと、データ競合が
+起きたり、データが壊れたりする可能性があります。
 
-### Embedded Rust: Sharing Data With An ISR
+### 組み込み Rust: ISR とのデータ共有
 
-In embedded Rust we care about the same things when it comes to sharing data with interrupt
-handlers! Similar to threads, interrupts can occur at any time, sort of like a thread waking up and
-accessing some shared data. This means that the data we share with an interrupt must live long
-enough, and we must be careful to ensure that our main code isn't in the middle of working with some
-data shared with an ISR when that ISR gets run and *also* tries to work with the data!
+組み込み Rust でも、割り込みハンドラとデータを共有する際には、同じことを気に
+しなければなりません！ スレッドと同様に、割り込みはいつでも発生し得ます。これは、
+ある共有データにアクセスするためにスレッドが目を覚ますようなものです。つまり、
+割り込みと共有するデータは十分長く生存しなければならず、また ISR が実行されて
+*同じく* そのデータを扱おうとしたときに、メインコードが ISR と共有されたデータを
+ちょうど処理している途中ではないよう、注意しなければなりません！
 
-In fact, in embedded Rust, we model interrupts in a similar way that we model threads in Rust: the
-same rules apply, for the same reasons. However, in embedded Rust, we have some crucial differences:
+実際、組み込み Rust では、Rust におけるスレッドのモデル化と似たやり方で割り込みを
+モデル化します。同じ理由で、同じルールが適用されます。ただし、組み込み Rust には
+いくつか重要な違いがあります:
 
-* Interrupts don't work exactly like threads: we set them up ahead of time, and they wait until some
-  event happens (like a button being pressed, or a timer expiring). At that point they run, but
-  without access to any passed-in context.
+* 割り込みはスレッドとまったく同じように動くわけではありません。あらかじめ設定して
+  おき、何らかのイベントが起こるまで待機します（たとえばボタンが押されたり、タイマーが
+  期限切れになったりするときです）。その時点で実行されますが、渡されたコンテキストには
+  アクセスできません。
 
-* Interrupts can be triggered multiple times, once for each time that the event occurs.
+* 割り込みは、そのイベントが発生するたびに、複数回トリガーされる可能性があります。
 
-Since we can't pass context to interrupts as function arguments, we need to find another place to
-store that data. In "bare metal" embedded Rust we don't have access to heap allocations: thus `Arc`
-and similar are not possibilities for us.
+割り込みに関数引数としてコンテキストを渡せないので、そのデータを保存する別の場所を
+見つける必要があります。「ベアメタル」の組み込み Rust では、ヒープ割り当てにアクセス
+できません。したがって、`Arc` やそれに類するものは使えません。
 
-Without the ability to pass things by value, and without a heap to store data, that leaves us with
-one place to put our shared data that our ISR can access: `static` globals.
+値渡しすることもできず、データを保存するヒープもないとなると、ISR がアクセスできる
+共有データを置く場所は 1 つしかありません。それが `static` なグローバル変数です。
 
-### Embedded Rust ISR Data Sharing: The "Standard Method" 
-
-Global variables are very much second-class citizens in Rust, with many limitations compared to
-local variables. You can declare a global state variable like this:
+### 組み込み Rust における ISR データ共有: 「標準的な方法」
+Rust ではグローバル変数はかなり二級市民的な扱いで、ローカル変数と比べると
+多くの制限があります。グローバルな状態変数は次のように宣言できます:
 
 ```rust
 static COUNTER: usize = 0;
 ```
 
-Of course, this isn't super-useful: you want to be able to mutate the `COUNTER`. You can
-say 
+もちろん、これはあまり実用的ではありません。`COUNTER` を変更できるようにしたいはずです。次のようにも
+書けます
 
 ```rust
 static mut COUNTER: usize = 0;
 ```
 
-but now all accesses will be unsafe.
+ただし、これであらゆるアクセスが unsafe になります。
 
 ```rust
 unsafe { COUNTER += 1 };
 ```
 
-The unsafety here is for a reason: imagine that in the middle of updating `COUNTER` an interrupt
-handler runs and also tries to update `COUNTER`. The usual chaos will ensue. Clearly some kind of
-locking is in order.
+ここで unsafe になるのには理由があります。`COUNTER` の更新の途中で割り込み
+ハンドラが実行され、そのハンドラも `COUNTER` を更新しようとする状況を想像して
+ください。いつもの混乱が起こります。明らかに、何らかのロックが必要です。
 
-The `critical-section` crate provides a sort of `Mutex` type, but with an unusual API and unusual
-operations. Examining the `Cargo.toml` for this chapter, you will see the feature
-`critical-section-single-core` on the `cortex-m` crate enabled. This feature asserts that there is
-only one processor core in this system, and that thus synchronization can be performed by simply
-*disabling interrupts* across the critical section. If not in an interrupt, this will ensure that
-only the main program has access to the global. If in an interrupt, this will ensure that the main
-program cannot be accessing the global (program control is in the interrupt handler) and that no
-other higher-priority interrupt handler can fire.
+`critical-section` クレートは一種の `Mutex` 型を提供しますが、その API と操作は少し
+変わっています。この章の `Cargo.toml` を見ると、`cortex-m` クレートで
+`critical-section-single-core` 機能が有効になっていることがわかるでしょう。この
+機能は、このシステムにはプロセッサコアが 1 つしかなく、したがってクリティカル
+セクションの間は単に*割り込みを無効化する*だけで同期を行える、という前提を置いて
+います。割り込みの外であれば、これによってグローバルにアクセスできるのはメイン
+プログラムだけになります。割り込みの中であれば、メインプログラムはグローバルに
+アクセスできず（プログラム制御は割り込みハンドラ内にあります）、さらにそれより
+高い優先度の別の割り込みハンドラも発火できないことが保証されます。
 
-`critical_section::Mutex` is a bit weird in that it gives mutual exclusion but does not itself give
-mutability. To make the data mutable, you will need to protect an interior-mutable type — usually
-`RefCell` — with the mutex. This `Mutex` is also a bit weird in that you don't `.lock()`
-it. Instead, you initiate a critical section with a closure that receives a "critical section token"
-certifying that other program execution is prevented. This token can be passed to the `Mutex`'s
-`borrow()` method to allow access.
+`critical_section::Mutex` は、相互排他は提供するものの、それ自体では可変性を
+提供しないという点で少し変わっています。データを可変にするには、内部可変な型
+— 通常は `RefCell` — をこの mutex で保護する必要があります。この `Mutex` は、
+`.lock()` しないという点でも少し変わっています。代わりに、他のプログラム実行が
+阻止されていることを証明する「critical section token」を受け取るクロージャで
+クリティカルセクションを開始します。このトークンを `Mutex` の `borrow()`
+メソッドに渡すことで、アクセスが可能になります。
 
-Putting it all together gives you the ability to share state between ISRs and the main program
-(`examples/count-once.rs`).
+これらをすべて組み合わせると、ISR とメインプログラムの間で状態を共有できるように
+なります（`examples/count-once.rs`）。
 
 ```rust
 {{#include examples/count-once.rs}}
 ```
 
-You still cannot safely return from your ISR, but now you are in a position to do something about
-that: share the `GPIOTE` with the ISR so that the ISR can clear the interrupt.
+まだ ISR から安全に return することはできませんが、いまやそれに対処できる位置に
+います。`GPIOTE` を ISR と共有して、ISR が割り込みをクリアできるようにするのです。
 
-### Sharing Peripherals (etc) With Globals
+### グローバルを使ってペリフェラル（など）を共有する
 
-There's one more problem yet to solve: Rust globals must be initialized statically — before the
-program starts. For the counter that was easy — just initialize it to 0. If you want to share the
-`GPIOTE` peripheral, though, that won't work. The peripheral must be retrieved from the `Board`
-struct and set up once the program has started: there is no `const` initializer for this (nor can
-there reasonably be).
+解決すべき問題がもう 1 つあります。Rust のグローバルは、プログラム開始前に静的に
+初期化されていなければなりません。カウンタなら簡単で、0 に初期化するだけでした。
+しかし `GPIOTE` ペリフェラルを共有したい場合は、そうはいきません。その
+ペリフェラルは `Board` 構造体から取り出して、プログラム開始後にセットアップ
+しなければなりません。これに対する `const` イニシャライザは存在しません
+（そして、妥当な形で存在し得るものでもありません）。
 
-Let's rewrite the button counter a bit. First, move the actual count to be an `AtomicUsize`. This is
-a more natural type for this global anyhow. Next, add a global `GPIOTE_PERIPHERAL` variable using
-the `LockMut` type from the `critical-section-lock-mut` crate. This crate is a convenient wrapper
-for the pattern of the last section.
+ボタンカウンタを少し書き換えてみましょう。まず、実際のカウントは `AtomicUsize` に
+移します。いずれにせよ、こちらのほうがこのグローバルにはより自然な型です。次に、
+`critical-section-lock-mut` クレートの `LockMut` 型を使って、グローバル変数
+`GPIOTE_PERIPHERAL` を追加します。このクレートは、前の節のパターンを扱いやすく
+したラッパーです。
 
-Now that the main program can set up the GPIOTE peripheral and then make it available to the
-interrupt handler, you can quit panicking and let the counter bump up on every button press. Move
-the count display into the main loop, to show that the count is shared between the interrupt handler
-and the rest of the program.
+メインプログラムが GPIOTE ペリフェラルをセットアップし、それを割り込みハンドラ
+から使えるようにできるようになったので、もう panic するのはやめて、ボタンが
+押されるたびにカウンタを増やせるようになります。カウント表示はメインループに
+移して、カウントが割り込みハンドラとプログラムの残りの部分との間で共有されて
+いることを示しましょう。
 
-Give this example (`examples/count.rs`) a run and note that the count is bumped up 1 on every push
-of the MB2 A button.
+この例（`examples/count.rs`）を実行して、MB2 A ボタンを押すたびにカウントが 1 ずつ
+増えることを確認してください。
 
 ```rust
 {{#include examples/count.rs}}
 ```
 
-> **NOTE** It is always a good idea to compile examples involving interrupt handling with
-> `--release`. Long interrupt handlers can lead to a lot of confusion.
+> **注記** 割り込み処理を含む例は、常に `--release` でコンパイルするのが
+> よい考えです。長い割り込みハンドラは多くの混乱を招く可能性があります。
 
-Really, though, that `rprintln!()` in the interrupt handler is bad practice: while the interrupt
-handler is running the printing code, nothing else can move forward. Let's move the reporting to the
-main loop, just after the `wfi()` "wait for interrupt". The count will then be reported every time
-an interrupt handler finishes (`examples/count-bounce.rs`). 
+とはいえ、割り込みハンドラ内の `rprintln!()` は実際には悪い作法です。割り込み
+ハンドラが出力コードを実行している間は、ほかの何も先に進めません。報告はメイン
+ループに移し、`wfi()`（「割り込み待ち」）のすぐ後で行うことにしましょう。そう
+すれば、割り込みハンドラが終了するたびにカウントが表示されます
+（`examples/count-bounce.rs`）。 
 
 ```rust
 {{#include examples/count-bounce.rs}}
 ```
 
-In this example the count is bumped up 1 on every push of the MB2 A button. Maybe. Especially if
-your MB2 is old (!), you may see a single press bump the counter by several. *This is not a software
-bug.* Mostly. In the next section, I'll talk about what might be going on and how we should deal
-with it.
+この例では、MB2 A ボタンを押すたびにカウントが 1 増えます。たぶん。特に MB2 が
+古い場合（！）は、1 回押しただけでカウンタが数回分増えることがあるかもしれません。
+*これはソフトウェアのバグではありません。* たいていは。次の節では、何が起きて
+いる可能性があるのか、そしてそれにどう対処すべきかについて説明します。
 
 [Interrupts Is Threads]: https://onevariable.com/blog/interrupts-is-threads
